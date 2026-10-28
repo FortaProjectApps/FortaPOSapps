@@ -2111,7 +2111,11 @@
                 <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
                 <!-- Tombol "Keluar Akun" (Sign Out) berwarna merah ringkas di sudut blok akun -->
-                <div class="absolute top-3.5 sm:top-5 right-3.5 sm:right-5">
+                <div class="absolute top-3.5 sm:top-5 right-3.5 sm:right-5 flex items-center gap-2">
+                    <a href="/fortapos-admin.html" target="_blank" title="Buka Panel Admin Developer / Super Admin" class="bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-cyan-300 border border-cyan-500/40 px-3 py-1.5 rounded-xl text-xs font-bold transition inline-flex items-center space-x-1.5 shadow-md cursor-pointer">
+                        <i class="fa-solid fa-gauge-high text-cyan-400 text-xs"></i>
+                        <span>Panel Admin</span>
+                    </a>
                     <button type="button" onclick="logoutApp()" id="headerLogoutBtn" title="Keluar Akun" class="bg-rose-600 hover:bg-rose-700 active:scale-95 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-md shadow-rose-950/40 cursor-pointer">
                         <i class="fa-solid fa-right-from-bracket text-xs"></i>
                         <span>Keluar</span>
@@ -5804,7 +5808,7 @@
                     statusPill.className = isPremium 
                         ? 'text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300' 
                         : 'text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
-                    statusPill.innerText = isTrial ? 'Percobaan Aktif' : 'Aktif Berlangganan';
+                    statusPill.innerText = isTrial ? 'Percobaan Aktif' : 'AKTIF PADA PERANGKAT';
                 }
                 if (pkgNameEl) {
                     pkgNameEl.innerText = isPremium ? 'Paket FortaPOS Premium' : (isTrial ? (currentLicense.packageName || 'Paket Basic (Masa Percobaan 7 Hari)') : 'Paket FortaPOS Basic');
@@ -5880,7 +5884,7 @@
                     text.innerText = 'Premium';
                 } else {
                     badge.className = 'header-status-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] shadow-2xs transition inline-flex items-center gap-1 cursor-pointer shrink-0';
-                    text.innerText = isTrial ? 'Trial 7 Hari' : 'Basic (1 Device)';
+                    text.innerText = isTrial ? 'Trial 7 Hari' : 'AKTIF PADA PERANGKAT';
                 }
             } else {
                 badge.className = 'header-status-btn bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] shadow-2xs transition inline-flex items-center gap-1 cursor-pointer shrink-0 animate-pulse';
@@ -6037,7 +6041,9 @@
 
                 // VALIDASI KETAT: Jika kode tidak valid atau sudah terpakai (isUsed bernilai true),
                 // tampilkan pop-up peringatan error yang jelas: "Kode lisensi salah atau sudah pernah digunakan"
-                if (!licenseDocData || licenseDocData.isUsed === true) {
+                // VALIDASI KETAT: Memeriksa kode belum pernah digunakan (status: "unused" atau !isUsed)
+                const isLicenseAvailable = licenseDocData && (!licenseDocData.isUsed) && (!licenseDocData.status || licenseDocData.status === 'unused');
+                if (!isLicenseAvailable) {
                     playBeep('error');
                     showLicenseErrorPopup('Kode lisensi salah atau sudah pernah digunakan');
                     showToast('Kode lisensi salah atau sudah pernah digunakan', 'error');
@@ -6099,6 +6105,7 @@
 
                 // 2.a. Lakukan 'updateDoc' pada dokumen lisensi tersebut (/licenses/{kode_lisensi})
                 const licenseUpdatePayload = {
+                    status: "active",
                     isUsed: true,
                     usedByStoreId: ownerAuthUid,
                     activatedAt: serverTs,
@@ -6299,6 +6306,10 @@
         function cancelCollisionSession() {
             hideDeviceLockoutModal();
             // Bersihkan sesi sementara dan kembalikan ke modal login
+            if (window._storeHeartbeatInterval) {
+                clearInterval(window._storeHeartbeatInterval);
+                window._storeHeartbeatInterval = null;
+            }
             localStorage.removeItem('toko_hj_nurjanah_session');
             localStorage.removeItem('fortapos_active_device_id');
             currentUser = null;
@@ -7714,6 +7725,12 @@
         // ==========================================
         function initAppSession() {
             if (!currentUser) return;
+            if (!window._storeHeartbeatInterval) {
+                window._storeHeartbeatInterval = setInterval(() => {
+                    if (typeof updateStoreActivity === 'function') updateStoreActivity();
+                }, 60000);
+            }
+            if (typeof updateStoreActivity === 'function') updateStoreActivity('Kasir aktif di perangkat');
             
             // 3. Ambil currentStoreId secara dinamis dari properti storeId milik Firebase User UID yang login, bukan dari string bawaan
             const authUser = (window.auth && window.auth.currentUser) || 
@@ -8128,6 +8145,27 @@
             }
         }
 
+        // ==========================================
+        // REAL-TIME STORE ACTIVITY & HEARTBEAT FOR ADMIN MONITORING
+        // ==========================================
+        async function updateStoreActivity(actionDesc) {
+            if (!isFirebaseConfigured || !db || !currentStoreId || !currentUser || currentUser.isDemo) return;
+            try {
+                const nowIso = new Date().toISOString();
+                const payload = {
+                    activeDeviceLastSeen: nowIso,
+                    lastActiveTime: nowIso
+                };
+                if (actionDesc) {
+                    payload.lastActiveAction = String(actionDesc).substring(0, 180);
+                }
+                await db.collection('stores').doc(currentStoreId).update(payload);
+            } catch (e) {
+                // Non-blocking error catch
+            }
+        }
+        window.updateStoreActivity = updateStoreActivity;
+
         async function logActivity(action, details) {
             const entry = {
                 storeId: currentStoreId,
@@ -8144,6 +8182,7 @@
                 try {
                     await db.collection('stores').doc(currentStoreId).collection('activityLogs').add(entry);
                     savedToCloud = true;
+                    if (typeof updateStoreActivity === "function") updateStoreActivity(`${action}: ${details}`);
                 } catch (err) {
                     console.warn("[FortaPOS] Gagal sinkronisasi log aktivitas ke Firestore (fallback lokal aktif):", err.message || err);
                 }
