@@ -61,6 +61,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
     <!-- Single Source of Truth: Firebase Configuration -->
     <script>
+        // DISAMAKAN DENGAN PANEL ADMIN SAAS (Project ID: fortaposall)
+        // Agar koleksi /licenses, /stores, /owners, & /activity_logs terhubung 100%!
         window.defaultFirebaseConfig = {
     apiKey: "AIzaSyDLP4Jnfw1nJYqlY6Y_8ZzcVaLe3QYVyv8",
     authDomain: "kasir-toko-nurjanah.firebaseapp.com",
@@ -2111,11 +2113,7 @@
                 <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
                 <!-- Tombol "Keluar Akun" (Sign Out) berwarna merah ringkas di sudut blok akun -->
-                <div class="absolute top-3.5 sm:top-5 right-3.5 sm:right-5 flex items-center gap-2">
-                    <a href="/fortapos-admin.html" target="_blank" title="Buka Panel Admin Developer / Super Admin" class="bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-cyan-300 border border-cyan-500/40 px-3 py-1.5 rounded-xl text-xs font-bold transition inline-flex items-center space-x-1.5 shadow-md cursor-pointer">
-                        <i class="fa-solid fa-gauge-high text-cyan-400 text-xs"></i>
-                        <span>Panel Admin</span>
-                    </a>
+                <div class="absolute top-3.5 sm:top-5 right-3.5 sm:right-5">
                     <button type="button" onclick="logoutApp()" id="headerLogoutBtn" title="Keluar Akun" class="bg-rose-600 hover:bg-rose-700 active:scale-95 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-md shadow-rose-950/40 cursor-pointer">
                         <i class="fa-solid fa-right-from-bracket text-xs"></i>
                         <span>Keluar</span>
@@ -4184,7 +4182,7 @@
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">Masukkan Kode Lisensi</label>
                                 <div class="relative">
-                                    <input type="text" id="licenseCodeInput" required placeholder="Cth: FORTA-BASIC-30D" class="w-full p-2.5 pr-9 border-2 border-slate-300 focus:border-emerald-500 rounded-xl text-xs sm:text-sm font-mono font-bold uppercase outline-none transition bg-white text-slate-800">
+                                    <input type="text" id="licenseCodeInput" required placeholder="Cth: PREM-XXXX-XXXX-XXXX atau BASE-XXXX-XXXX-XXXX" class="w-full p-2.5 pr-9 border-2 border-slate-300 focus:border-emerald-500 rounded-xl text-xs sm:text-sm font-mono font-bold uppercase outline-none transition bg-white text-slate-800">
                                     <button type="button" onclick="document.getElementById('licenseCodeInput').value = ''; document.getElementById('licenseCodeInput').focus();" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer" title="Hapus">
                                         <i class="fa-solid fa-circle-xmark text-sm"></i>
                                     </button>
@@ -5808,7 +5806,7 @@
                     statusPill.className = isPremium 
                         ? 'text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300' 
                         : 'text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
-                    statusPill.innerText = isTrial ? 'Percobaan Aktif' : 'AKTIF PADA PERANGKAT';
+                    statusPill.innerText = isTrial ? 'Percobaan Aktif' : 'Aktif Berlangganan';
                 }
                 if (pkgNameEl) {
                     pkgNameEl.innerText = isPremium ? 'Paket FortaPOS Premium' : (isTrial ? (currentLicense.packageName || 'Paket Basic (Masa Percobaan 7 Hari)') : 'Paket FortaPOS Basic');
@@ -5884,7 +5882,7 @@
                     text.innerText = 'Premium';
                 } else {
                     badge.className = 'header-status-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] shadow-2xs transition inline-flex items-center gap-1 cursor-pointer shrink-0';
-                    text.innerText = isTrial ? 'Trial 7 Hari' : 'AKTIF PADA PERANGKAT';
+                    text.innerText = isTrial ? 'Trial 7 Hari' : 'Basic (1 Device)';
                 }
             } else {
                 badge.className = 'header-status-btn bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] shadow-2xs transition inline-flex items-center gap-1 cursor-pointer shrink-0 animate-pulse';
@@ -5984,209 +5982,416 @@
             }
         }
 
+        // ==============================================================
+        // SINKRONISASI LOCALSTORAGE PAKET & LISENSI (paket_aktif, status_paket, dll)
+        // ==============================================================
+        function syncLicenseToLocalStorage(licData) {
+            if (!licData) return;
+            try {
+                localStorage.setItem('fortapos_license_data', JSON.stringify(licData));
+                localStorage.setItem('paket_aktif', licData.packageType || 'none');
+                localStorage.setItem('nama_paket', licData.packageName || 'Belum Aktif');
+                localStorage.setItem('status_paket', licData.status || 'inactive');
+                localStorage.setItem('durasi_paket', String(licData.duration || licData.durationDays || 0));
+                localStorage.setItem('kode_lisensi', licData.licenseCode || licData.code || '');
+                localStorage.setItem('expired_paket', licData.expiryDate || licData.expiresAt || '');
+            } catch (e) {
+                console.warn('Gagal sinkronisasi LocalStorage paket:', e);
+            }
+        }
+        window.syncLicenseToLocalStorage = syncLicenseToLocalStorage;
+
+        // ==============================================================
+        // REAL-TIME PRESENCE HEARTBEAT OWNER (ONLINE / OFFLINE & LAST SEEN)
+        // ==============================================================
+        let ownerPresenceInterval = null;
+        let unsubStoreRealtimeLicense = null;
+
+        async function updateOwnerPresence(isOnlineStatus = true, customActivityText = null) {
+            if (!isFirebaseConfigured || !db) return;
+            if (!currentUser || currentUser.isDemo) return;
+            const storeTarget = currentStoreId || currentUser.storeId || currentUser.uid;
+            if (!storeTarget) return;
+
+            // Hanya Owner (atau sesi toko aktif) yang mengupdate kehadiran toko utama
+            const isOwnerRole = (currentUser.role === 'owner' || !currentUser.role);
+            if (!isOwnerRole) return;
+
+            const serverTs = (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue)
+                ? firebase.firestore.FieldValue.serverTimestamp()
+                : new Date().toISOString();
+
+            const payload = {
+                uid: storeTarget,
+                storeId: storeTarget,
+                storeName: (dbSettings && dbSettings.storeName) || currentUser.storeName || 'Toko FortaPOS',
+                ownerName: currentUser.name || (dbSettings && dbSettings.ownerName) || 'Owner',
+                email: currentUser.email || '',
+                phone: (dbSettings && (dbSettings.ownerWhatsapp || dbSettings.phone)) || '',
+                isOnline: Boolean(isOnlineStatus),
+                onlineStatus: isOnlineStatus ? 'online' : 'offline',
+                lastSeen: serverTs,
+                lastSeenIso: new Date().toISOString(),
+                paket_aktif: (currentLicense && currentLicense.packageType) || localStorage.getItem('paket_aktif') || 'none',
+                status_paket: (currentLicense && currentLicense.status) || localStorage.getItem('status_paket') || 'inactive',
+                license: currentLicense || null,
+                updatedAt: serverTs
+            };
+
+            if (customActivityText) {
+                payload.lastActivity = customActivityText;
+                payload.lastActivityAt = serverTs;
+                payload.lastActivityIso = new Date().toISOString();
+            }
+
+            try {
+                await db.collection('stores').doc(storeTarget).set(payload, { merge: true });
+                await db.collection('owners').doc(storeTarget).set(payload, { merge: true });
+            } catch (err) {
+                console.warn('[Presence] Gagal update status kehadiran Owner:', err.message || err);
+            }
+        }
+        window.updateOwnerPresence = updateOwnerPresence;
+
+        function startOwnerPresenceHeartbeat() {
+            if (ownerPresenceInterval) {
+                clearInterval(ownerPresenceInterval);
+                ownerPresenceInterval = null;
+            }
+            if (!currentUser || currentUser.isDemo) return;
+            const isOwnerRole = (currentUser.role === 'owner' || !currentUser.role);
+            if (!isOwnerRole) return;
+
+            // Kirim status ONLINE pertama kali saat sesi dimulai
+            updateOwnerPresence(true);
+
+            // Kirim detak jantung (heartbeat) setiap 25 detik selama aplikasi terbuka
+            ownerPresenceInterval = setInterval(() => {
+                if (document.visibilityState !== 'hidden') {
+                    updateOwnerPresence(true);
+                }
+            }, 25000);
+
+            // Pasang real-time listener ke dokumen toko agar perubahan lisensi dari Admin langsung tersinkron
+            const storeTarget = currentStoreId || currentUser.storeId || currentUser.uid;
+            if (isFirebaseConfigured && db && storeTarget) {
+                if (unsubStoreRealtimeLicense) {
+                    try { unsubStoreRealtimeLicense(); } catch (e) {}
+                }
+                unsubStoreRealtimeLicense = db.collection('stores').doc(storeTarget).onSnapshot((docSnap) => {
+                    if (docSnap.exists) {
+                        const sData = docSnap.data();
+                        if (sData && sData.license) {
+                            currentLicense = sData.license;
+                            syncLicenseToLocalStorage(currentLicense);
+                            updateLicenseModalCol1UI();
+                            applyLicenseRestrictions();
+                            updateNavLicenseBadge();
+                        }
+                    }
+                }, (err) => {
+                    console.warn('[License Sync] Listener warning:', err.message || err);
+                });
+            }
+        }
+        window.startOwnerPresenceHeartbeat = startOwnerPresenceHeartbeat;
+
+        async function stopOwnerPresenceHeartbeat() {
+            if (ownerPresenceInterval) {
+                clearInterval(ownerPresenceInterval);
+                ownerPresenceInterval = null;
+            }
+            if (unsubStoreRealtimeLicense) {
+                try { unsubStoreRealtimeLicense(); } catch (e) {}
+                unsubStoreRealtimeLicense = null;
+            }
+            await updateOwnerPresence(false, 'Logout / Keluar dari sistem kasir');
+        }
+        window.stopOwnerPresenceHeartbeat = stopOwnerPresenceHeartbeat;
+
+        // Pantau perubahan tab visibility & penutupan tab browser
+        document.addEventListener('visibilitychange', function() {
+            if (!currentUser || currentUser.role !== 'owner' || currentUser.isDemo) return;
+            if (document.visibilityState === 'visible') {
+                updateOwnerPresence(true);
+            } else {
+                updateOwnerPresence(false);
+            }
+        });
+
+        window.addEventListener('pagehide', function() {
+            if (currentUser && currentUser.role === 'owner' && !currentUser.isDemo) {
+                updateOwnerPresence(false);
+            }
+        });
+
+        // ==============================================================
+        // FUNGSI AKTIVASI LISENSI TERPADU (aktifkanLisensi & activateLicense)
+        // Mendukung Struktur Skema Standar:
+        // { licenseCode, code, packageType, duration, durationDays, status: "unused"|"active",
+        //   isUsed, activatedByStoreId, usedByStoreId, activatedAt, expiryDate, expiresAt }
+        // ==============================================================
         async function handleActivateLicenseSubmit(e) {
             e.preventDefault();
             const input = document.getElementById('licenseCodeInput');
             const code = input ? input.value : '';
-            await activateLicense(code);
+            await aktifkanLisensi(code);
         }
 
-        async function activateLicense(code) {
-            // Bersihkan input kode lisensi dari spasi berlebih dan format huruf kapital
+        async function aktifkanLisensi(code) {
+            // 1. Normalisasi input kode lisensi (hapus spasi & huruf kapital, pertahankan tanda strip '-')
             const cleanCode = (code || '').trim().replace(/\s+/g, '').toUpperCase();
             if (!cleanCode) {
                 playBeep('error');
-                showLicenseErrorPopup('Kode lisensi salah atau sudah pernah digunakan');
-                showToast('Kode lisensi salah atau sudah pernah digunakan', 'error');
+                showLicenseErrorPopup('Masukkan kode lisensi terlebih dahulu!');
+                showToast('Masukkan kode lisensi terlebih dahulu!', 'error');
                 return;
             }
 
             const isSubscribed = isOfficiallySubscribed();
-
             const submitBtn = document.getElementById('btnSubmitActivateLicense');
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Memverifikasi...</span>';
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Memvalidasi di Cloud Firestore...</span>';
             }
 
             try {
+                let licenseDocRef = null;
+                let licenseDocId = cleanCode;
                 let licenseDocData = null;
 
-                // 1. Pencarian dokumen di Firestore pada path /licenses/{kode_lisensi}
+                // 2. Cari dokumen di koleksi Firestore /licenses (baik via Document ID maupun query field licenseCode / code)
                 if (isFirebaseConfigured && db) {
                     try {
-                        const docSnap = await db.collection('licenses').doc(cleanCode).get();
-                        if (docSnap.exists) {
-                            licenseDocData = docSnap.data();
+                        const directSnap = await db.collection('licenses').doc(cleanCode).get();
+                        if (directSnap.exists) {
+                            licenseDocRef = directSnap.ref;
+                            licenseDocId = directSnap.id;
+                            licenseDocData = directSnap.data();
+                        } else {
+                            // Fallback query berdasarkan field licenseCode atau code jika Document ID acak
+                            const q1 = await db.collection('licenses').where('licenseCode', '==', cleanCode).limit(1).get();
+                            if (!q1.empty) {
+                                licenseDocRef = q1.docs[0].ref;
+                                licenseDocId = q1.docs[0].id;
+                                licenseDocData = q1.docs[0].data();
+                            } else {
+                                const q2 = await db.collection('licenses').where('code', '==', cleanCode).limit(1).get();
+                                if (!q2.empty) {
+                                    licenseDocRef = q2.docs[0].ref;
+                                    licenseDocId = q2.docs[0].id;
+                                    licenseDocData = q2.docs[0].data();
+                                }
+                            }
                         }
                     } catch (fsErr) {
-                        console.warn("Pemeriksaan Firestore /licenses gagal:", fsErr);
+                        console.error('Error membaca koleksi /licenses di Firestore:', fsErr);
                     }
                 }
 
-                // Fallback periksa seed licenses lokal jika offline
-                if (!licenseDocData) {
+                // Fallback ke seed lokal hanya jika Firestore benar-benar tidak terjangkau/offline
+                if (!licenseDocData && (!isFirebaseConfigured || !navigator.onLine)) {
                     let localLicenses = [];
                     try {
-                        const saved = localStorage.getItem('fortapos_local_licenses');
+                        const saved = localStorage.getItem('fortapos_local_licenses_v2') || localStorage.getItem('fortapos_local_licenses');
                         localLicenses = saved ? JSON.parse(saved) : LOCAL_SEED_LICENSES;
                     } catch (e) {
                         localLicenses = LOCAL_SEED_LICENSES;
                     }
-                    const found = localLicenses.find(l => (l.code || '').replace(/\s+/g, '').toUpperCase() === cleanCode);
+                    const found = localLicenses.find(l => ((l.licenseCode || l.code || '').replace(/\s+/g, '').toUpperCase() === cleanCode));
                     if (found) {
                         licenseDocData = { ...found };
                     }
                 }
 
-                // VALIDASI KETAT: Jika kode tidak valid atau sudah terpakai (isUsed bernilai true),
-                // tampilkan pop-up peringatan error yang jelas: "Kode lisensi salah atau sudah pernah digunakan"
-                // VALIDASI KETAT: Memeriksa kode belum pernah digunakan (status: "unused" atau !isUsed)
-                const isLicenseAvailable = licenseDocData && (!licenseDocData.isUsed) && (!licenseDocData.status || licenseDocData.status === 'unused');
-                if (!isLicenseAvailable) {
+                // 3. Validasi Keberadaan & Status Lisensi ("unused" vs "active" / isUsed)
+                if (!licenseDocData) {
                     playBeep('error');
-                    showLicenseErrorPopup('Kode lisensi salah atau sudah pernah digunakan');
-                    showToast('Kode lisensi salah atau sudah pernah digunakan', 'error');
+                    showLicenseErrorPopup('Kode lisensi tidak ditemukan! Pastikan kode sesuai dengan panel Admin.');
+                    showToast('Kode lisensi tidak ditemukan di database!', 'error');
                     return;
                 }
 
-                // Ambil UID Firebase Auth dari Owner yang sedang login
-                const authUser = (window.auth && window.auth.currentUser) || 
+                const docStatus = String(licenseDocData.status || '').toLowerCase();
+                const alreadyUsed = (licenseDocData.isUsed === true) || (docStatus === 'active' || docStatus === 'used');
+
+                // Ambil identitas Store ID & Nama Owner yang sedang login
+                const authUser = (window.auth && window.auth.currentUser) ||
                                  (typeof getAuth === 'function' && getAuth() ? getAuth().currentUser : null) ||
                                  (window.fbAuth && window.fbAuth.auth ? window.fbAuth.auth.currentUser : null);
-                const ownerAuthUid = (authUser && authUser.uid) ? authUser.uid : (currentUser ? (currentUser.uid || currentUser.storeId) : currentStoreId);
+                const ownerStoreId = (authUser && authUser.uid)
+                    ? authUser.uid
+                    : (currentStoreId || (currentUser ? (currentUser.uid || currentUser.storeId) : null) || 'STORE-' + Date.now());
+                const ownerNameVal = (currentUser ? (currentUser.name || currentUser.ownerName) : '') || (dbSettings && dbSettings.ownerName) || 'Owner Toko';
+                const storeNameVal = (dbSettings && dbSettings.storeName) || 'Toko FortaPOS';
 
-                // Tentukan durasi & tipe paket dari data lisensi atau inferensi kode (30/90/365 hari)
-                const newDurationDays = Number(licenseDocData.durationDays) || (cleanCode.includes('365') ? 365 : cleanCode.includes('90') ? 90 : 30);
-                const newPackageType = (licenseDocData.packageType || (cleanCode.includes('PREM') ? 'premium' : 'basic')).toLowerCase();
+                // Tolak jika sudah pernah diaktifkan oleh toko lain atau sebelumnya
+                if (alreadyUsed) {
+                    playBeep('error');
+                    showLicenseErrorPopup('Kode lisensi ini sudah pernah digunakan (Status: Active)!');
+                    showToast('Kode lisensi sudah terpakai!', 'error');
+                    return;
+                }
+
+                // 4. Baca Durasi & Tipe Paket dari Skema Standar (duration / durationDays & packageType)
+                const newDurationDays = Number(licenseDocData.duration || licenseDocData.durationDays) ||
+                    (cleanCode.includes('365') ? 365 : cleanCode.includes('90') ? 90 : 30);
+                const newPackageType = String(
+                    licenseDocData.packageType ||
+                    (cleanCode.startsWith('PREM') || cleanCode.includes('PREMIUM') ? 'premium' : 'basic')
+                ).toLowerCase();
                 const newPackageName = licenseDocData.packageName || (newPackageType === 'premium' ? 'Paket Premium' : 'Paket Basic');
 
-                // Hitung durasi dan waktu kedaluwarsa (expiresAt)
-                const currentExpiresDate = (currentLicense && currentLicense.expiresAt) ? new Date(currentLicense.expiresAt) : null;
-                const isCurrentlyActive = currentLicense && (currentLicense.status === 'active' || currentLicense.status === 'trial') && currentExpiresDate && (currentExpiresDate.getTime() > Date.now());
+                // 5. Hitung Akumulasi Durasi / Tanggal Kedaluwarsa (expiryDate & expiresAt)
+                const currentExpiresRaw = currentLicense && (currentLicense.expiryDate || currentLicense.expiresAt);
+                const currentExpiresDate = currentExpiresRaw ? new Date(currentExpiresRaw) : null;
+                const isCurrentlyActive = currentLicense &&
+                    (currentLicense.status === 'active' || currentLicense.status === 'trial') &&
+                    currentExpiresDate && !isNaN(currentExpiresDate.getTime()) &&
+                    (currentExpiresDate.getTime() > Date.now());
 
-                let finalExpiresAt = null;
-                let finalActivatedAt = null;
+                let finalExpiryIso = null;
+                let finalActivatedIso = new Date().toISOString();
                 let finalDurationDays = newDurationDays;
                 let isAccumulating = false;
                 let remainingDays = 0;
 
                 if (isSubscribed && isCurrentlyActive) {
-                    const currentPkgType = (currentLicense.packageType || 'basic').toLowerCase();
+                    const currentPkgType = String(currentLicense.packageType || 'basic').toLowerCase();
                     const msRemaining = Math.max(0, currentExpiresDate.getTime() - Date.now());
                     remainingDays = Math.ceil(msRemaining / (1000 * 60 * 60 * 24));
 
-                    // Ditolak jika jenis paket berbeda dan paket saat ini masih aktif
-                    if (newPackageType !== currentPkgType) {
+                    // Jika upgrade dari Basic ke Premium diizinkan langsung, jika downgrade ditolak saat masih aktif
+                    if (newPackageType !== currentPkgType && currentPkgType === 'premium' && newPackageType === 'basic') {
                         playBeep('error');
-                        const activePkgLabel = currentLicense.packageName || (currentPkgType === 'premium' ? 'Paket Premium' : 'Paket Basic');
-                        showToast(`Peringatan: Tidak dapat berpindah jenis paket! Anda saat ini masih aktif di ${activePkgLabel} (sisa ${remainingDays} hari). Pindah jenis paket hanya diperbolehkan setelah paket yang saat ini aktif benar-benar habis durasinya.`, 'error');
+                        showToast(`Tidak dapat turun ke Paket Basic karena Paket Premium Anda masih aktif (${remainingDays} hari tersisa).`, 'error');
                         return;
                     }
 
-                    // Akumulasikan durasi lama + baru dan perpanjang tanggal kedaluwarsa
-                    isAccumulating = true;
-                    finalDurationDays = remainingDays + newDurationDays;
-                    const newExpiryMs = currentExpiresDate.getTime() + (newDurationDays * 24 * 60 * 60 * 1000);
-                    finalExpiresAt = new Date(newExpiryMs).toISOString();
-                    finalActivatedAt = currentLicense.activatedAt || new Date().toISOString();
+                    if (newPackageType === currentPkgType) {
+                        isAccumulating = true;
+                        finalDurationDays = remainingDays + newDurationDays;
+                        finalExpiryIso = new Date(currentExpiresDate.getTime() + (newDurationDays * 24 * 60 * 60 * 1000)).toISOString();
+                        finalActivatedIso = currentLicense.activatedAt || finalActivatedIso;
+                    } else {
+                        // Upgrade Basic -> Premium mulai hari ini + sisa konversi
+                        finalDurationDays = newDurationDays;
+                        finalExpiryIso = new Date(Date.now() + (newDurationDays * 24 * 60 * 60 * 1000)).toISOString();
+                    }
                 } else {
-                    const now = new Date();
-                    finalExpiresAt = new Date(now.getTime() + (newDurationDays * 24 * 60 * 60 * 1000)).toISOString();
-                    finalActivatedAt = now.toISOString();
-                    finalDurationDays = newDurationDays;
-                    isAccumulating = false;
+                    finalExpiryIso = new Date(Date.now() + (newDurationDays * 24 * 60 * 60 * 1000)).toISOString();
                 }
 
-                // serverTimestamp() dari Cloud Firestore
                 const serverTs = (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue)
                     ? firebase.firestore.FieldValue.serverTimestamp()
-                    : new Date();
+                    : finalActivatedIso;
 
-                // 2.a. Lakukan 'updateDoc' pada dokumen lisensi tersebut (/licenses/{kode_lisensi})
-                const licenseUpdatePayload = {
-                    status: "active",
-                    isUsed: true,
-                    usedByStoreId: ownerAuthUid,
-                    activatedAt: serverTs,
-                    expiresAt: finalExpiresAt,
-                    updatedAt: serverTs
-                };
-
-                if (isFirebaseConfigured && db) {
-                    try {
-                        const licenseDocRef = db.collection('licenses').doc(cleanCode);
-                        if (typeof updateDoc === 'function') {
-                            await updateDoc(licenseDocRef, licenseUpdatePayload);
-                        } else {
-                            await licenseDocRef.update(licenseUpdatePayload);
-                        }
-                    } catch (licErr) {
-                        console.warn("Gagal updateDoc lisensi di Firestore:", licErr);
-                        try {
-                            await db.collection('licenses').doc(cleanCode).set(licenseUpdatePayload, { merge: true });
-                        } catch (e) {}
-                    }
-                }
-
-                // 2.b. Perbarui status paket pada profil toko Owner secara real-time
-                const ownerStoreId = ownerAuthUid || currentStoreId;
-                const ownerNameVal = (currentUser ? (currentUser.name || currentUser.ownerName) : '') || dbSettings.ownerName || 'Owner';
-
-                const storeLicenseData = {
+                // 6. Objek Lisensi Terpadu (Sinkron Penuh antara Admin & Kasir)
+                const unifiedLicenseUpdate = {
+                    licenseCode: cleanCode,
                     code: cleanCode,
                     packageType: newPackageType,
                     packageName: newPackageName,
+                    duration: newDurationDays,
+                    durationDays: newDurationDays,
+                    status: 'active',
+                    isUsed: true,
+                    activatedByStoreId: ownerStoreId,
+                    usedByStoreId: ownerStoreId,
+                    activatedByStoreName: storeNameVal,
+                    activatedByOwnerName: ownerNameVal,
+                    activatedAt: finalActivatedIso,
+                    expiryDate: finalExpiryIso,
+                    expiresAt: finalExpiryIso,
+                    updatedAt: serverTs
+                };
+
+                const storeLicenseObject = {
+                    licenseCode: cleanCode,
+                    code: cleanCode,
+                    packageType: newPackageType,
+                    packageName: newPackageName,
+                    duration: finalDurationDays,
                     durationDays: finalDurationDays,
                     status: 'active',
                     isTrial: false,
-                    activatedAt: finalActivatedAt,
-                    expiresAt: finalExpiresAt,
+                    activatedByStoreId: ownerStoreId,
+                    storeId: ownerStoreId,
                     ownerName: ownerNameVal,
-                    storeId: ownerStoreId
+                    storeName: storeNameVal,
+                    activatedAt: finalActivatedIso,
+                    expiryDate: finalExpiryIso,
+                    expiresAt: finalExpiryIso
                 };
 
-                if (isFirebaseConfigured && db && ownerStoreId) {
+                // 7. Update Dokumen /licenses/{id}, /stores/{storeId}, /owners/{storeId}, dan /logs di Firestore
+                if (isFirebaseConfigured && db) {
+                    const targetRef = licenseDocRef || db.collection('licenses').doc(licenseDocId);
+                    await targetRef.set(unifiedLicenseUpdate, { merge: true });
+
+                    const storeUpdatePayload = {
+                        uid: ownerStoreId,
+                        storeId: ownerStoreId,
+                        storeName: storeNameVal,
+                        ownerName: ownerNameVal,
+                        email: (currentUser && currentUser.email) || '',
+                        paket_aktif: newPackageType,
+                        status_paket: 'active',
+                        licenseCode: cleanCode,
+                        expiryDate: finalExpiryIso,
+                        license: storeLicenseObject,
+                        isOnline: true,
+                        onlineStatus: 'online',
+                        lastSeen: serverTs,
+                        lastSeenIso: new Date().toISOString(),
+                        lastActivity: `Mengaktifkan lisensi ${newPackageName} (${cleanCode})`,
+                        lastActivityAt: serverTs,
+                        updatedAt: serverTs
+                    };
+
+                    await db.collection('stores').doc(ownerStoreId).set(storeUpdatePayload, { merge: true });
+                    await db.collection('owners').doc(ownerStoreId).set(storeUpdatePayload, { merge: true });
+
+                    // Catat ke koleksi /logs untuk Audit Trail Admin Panel
                     try {
-                        const storeRef = db.collection('stores').doc(ownerStoreId);
-                        const storeUpdatePayload = {
-                            license: storeLicenseData,
-                            updatedAt: serverTs
-                        };
-                        if (typeof updateDoc === 'function') {
-                            await updateDoc(storeRef, storeUpdatePayload);
-                        } else {
-                            await storeRef.update(storeUpdatePayload);
-                        }
-                        try {
-                            const ownerRef = db.collection('owners').doc(ownerStoreId);
-                            if (typeof updateDoc === 'function') {
-                                await updateDoc(ownerRef, storeUpdatePayload);
-                            } else {
-                                await ownerRef.update(storeUpdatePayload);
-                            }
-                        } catch (e) {}
-                    } catch (stErr) {
-                        console.warn("Gagal update profil toko di Firestore:", stErr);
+                        await db.collection('logs').add({
+                            action: 'CLAIM',
+                            licenseCode: cleanCode,
+                            packageType: newPackageType,
+                            durationDays: newDurationDays,
+                            performedBy: `${storeNameVal} (${ownerNameVal})`,
+                            performedByRole: 'store_owner',
+                            targetStoreId: ownerStoreId,
+                            details: `Toko "${storeNameVal}" (${ownerNameVal}) mengaktifkan lisensi ${cleanCode} - ${newPackageName} (${newDurationDays} Hari).`,
+                            timestamp: serverTs
+                        });
+                    } catch (logErr) {
+                        console.warn('Gagal menulis /logs:', logErr);
                     }
                 }
 
-                // PERBARUI STATUS PAKET DI LOCALSTORAGE & MEMORI SAAT ITU JUGA TANPA RELOAD HALAMAN
-                currentLicense = storeLicenseData;
-                localStorage.setItem('fortapos_license_data', JSON.stringify(currentLicense));
+                // 8. Sinkronkan ke Memori & LocalStorage (paket_aktif, status_paket, fortapos_license_data, dll)
+                currentLicense = storeLicenseObject;
+                currentStoreId = ownerStoreId;
+                syncLicenseToLocalStorage(currentLicense);
 
-                // Update seed cache lokal
+                // Update cache lisensi lokal jika ada
                 try {
-                    let localLicenses = JSON.parse(localStorage.getItem('fortapos_local_licenses') || '[]');
-                    const matchIdx = localLicenses.findIndex(l => (l.code || '').replace(/\s+/g, '').toUpperCase() === cleanCode);
-                    if (matchIdx !== -1) {
-                        localLicenses[matchIdx].isUsed = true;
-                        localLicenses[matchIdx].usedByStoreId = ownerStoreId;
-                        localStorage.setItem('fortapos_local_licenses', JSON.stringify(localLicenses));
+                    const rawLocal = localStorage.getItem('fortapos_local_licenses_v2');
+                    if (rawLocal) {
+                        const arr = JSON.parse(rawLocal);
+                        const idx = arr.findIndex(x => (x.licenseCode || x.code) === cleanCode);
+                        if (idx !== -1) {
+                            arr[idx] = { ...arr[idx], ...unifiedLicenseUpdate };
+                            localStorage.setItem('fortapos_local_licenses_v2', JSON.stringify(arr));
+                        }
                     }
                 } catch (e) {}
 
-                // UPDATE REAL-TIME: Buka fitur 'Manajemen Karyawan' dan 'Backup Cloud E2E' jika paket premium
+                // 9. Perbarui UI secara instan tanpa reload
+                const codeInputEl = document.getElementById('licenseCodeInput');
+                if (codeInputEl) codeInputEl.value = '';
+
                 updateLicenseModalCol1UI();
                 applyLicenseRestrictions();
                 updateNavLicenseBadge();
@@ -6194,17 +6399,14 @@
                 playBeep('success');
                 triggerHapticFeedback(90);
 
-                if (newPackageType === 'premium') {
-                    showToast('Lisensi Paket Premium BERHASIL DIAKTIFKAN! Fitur Manajemen Karyawan dan Backup Cloud E2E telah terbuka penuh.', 'success');
+                if (isAccumulating) {
+                    const expFmt = new Date(finalExpiryIso).toLocaleDateString('id-ID');
+                    showToast(`Lisensi diperpanjang! Total masa aktif ${finalDurationDays} hari hingga ${expFmt}.`, 'success');
                 } else {
-                    if (isAccumulating) {
-                        const expFormatted = new Date(finalExpiresAt).toLocaleDateString('id-ID');
-                        showToast(`Akumulasi durasi berhasil! Sisa paket lama ${remainingDays} hari + lisensi baru ${newDurationDays} hari = ${finalDurationDays} hari (${newPackageName}). Akhir paket diperpanjang hingga ${expFormatted}.`, 'success');
-                    } else {
-                        showToast(`Lisensi ${newPackageName} (${newDurationDays} Hari) BERHASIL DIAKTIFKAN!`, 'success');
-                    }
+                    showToast(`Lisensi ${newPackageName} (${newDurationDays} Hari) BERHASIL DIAKTIFKAN!`, 'success');
                 }
-                logActivity('Aktivasi Lisensi', `Mengaktifkan lisensi ${newPackageName} (${cleanCode}) masa aktif ${finalDurationDays} hari.`);
+
+                await logActivity('Aktivasi Lisensi', `Mengaktifkan lisensi ${newPackageName} (${cleanCode}) untuk ${finalDurationDays} hari.`);
 
                 const licenseModal = document.getElementById('licenseModal');
                 if (licenseModal) licenseModal.classList.add('hidden');
@@ -6213,11 +6415,11 @@
                     isNewOwnerRegistrationPending = false;
                     initAppSession();
                 }
-
             } catch (err) {
-                console.error("Gagal klaim lisensi:", err);
-                showLicenseErrorPopup('Kode lisensi salah atau sudah pernah digunakan');
-                showToast('Gagal memvalidasi lisensi: ' + err.message, 'error');
+                console.error('Gagal mengaktifkan lisensi:', err);
+                playBeep('error');
+                showLicenseErrorPopup('Gagal memvalidasi lisensi di Firestore: ' + (err.message || 'Periksa koneksi internet & Rules Firestore'));
+                showToast('Gagal mengaktifkan lisensi: ' + (err.message || 'Error'), 'error');
             } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
@@ -6225,6 +6427,11 @@
                 }
             }
         }
+
+        // Alias kompatibilitas penuh
+        const activateLicense = aktifkanLisensi;
+        window.aktifkanLisensi = aktifkanLisensi;
+        window.activateLicense = activateLicense;
 
         async function activateTrialPackage() {
             // Penguncian Fitur Percobaan: Cegah jika sudah aktif berlangganan resmi
@@ -6253,13 +6460,17 @@
                 storeId: activeStoreTarget
             };
 
-            localStorage.setItem('fortapos_license_data', JSON.stringify(currentLicense));
+            syncLicenseToLocalStorage(currentLicense);
 
             if (isFirebaseConfigured && db && currentStoreId) {
                 try {
-                    await db.collection('stores').doc(currentStoreId).update({
-                        'license': currentLicense
-                    });
+                    await db.collection('stores').doc(currentStoreId).set({
+                        license: currentLicense,
+                        paket_aktif: 'basic',
+                        status_paket: 'trial',
+                        expiryDate: expiresAt
+                    }, { merge: true });
+                    await updateOwnerPresence(true, 'Memulai masa percobaan gratis 7 hari (Trial Basic)');
                 } catch (e) {
                     console.warn("Gagal simpan trial ke Firestore:", e);
                 }
@@ -6306,10 +6517,6 @@
         function cancelCollisionSession() {
             hideDeviceLockoutModal();
             // Bersihkan sesi sementara dan kembalikan ke modal login
-            if (window._storeHeartbeatInterval) {
-                clearInterval(window._storeHeartbeatInterval);
-                window._storeHeartbeatInterval = null;
-            }
             localStorage.removeItem('toko_hj_nurjanah_session');
             localStorage.removeItem('fortapos_active_device_id');
             currentUser = null;
@@ -7621,6 +7828,15 @@
         async function performActualLogout() {
             showToast('Memproses keluar & membersihkan sesi...', 'info');
 
+            // 0. Set status kehadiran Owner menjadi OFFLINE di Firestore sebelum keluar
+            try {
+                if (typeof stopOwnerPresenceHeartbeat === 'function') {
+                    await stopOwnerPresenceHeartbeat();
+                }
+            } catch (presErr) {
+                console.warn('Gagal update offline presence saat logout:', presErr);
+            }
+
             // 1. Sign out dari Firebase Authentication resmi
             try {
                 const authInstance = window.auth || (window.fbAuth && window.fbAuth.auth) || (typeof getAuth === 'function' ? getAuth() : null);
@@ -7725,12 +7941,6 @@
         // ==========================================
         function initAppSession() {
             if (!currentUser) return;
-            if (!window._storeHeartbeatInterval) {
-                window._storeHeartbeatInterval = setInterval(() => {
-                    if (typeof updateStoreActivity === 'function') updateStoreActivity();
-                }, 60000);
-            }
-            if (typeof updateStoreActivity === 'function') updateStoreActivity('Kasir aktif di perangkat');
             
             // 3. Ambil currentStoreId secara dinamis dari properti storeId milik Firebase User UID yang login, bukan dari string bawaan
             const authUser = (window.auth && window.auth.currentUser) || 
@@ -7819,8 +8029,12 @@
                 updateNavLicenseBadge();
             }
 
-            // Verifikasi status Single-Device Access
+            // Sinkronkan LocalStorage & Jalankan Real-Time Presence Heartbeat Owner
+            if (currentLicense) {
+                syncLicenseToLocalStorage(currentLicense);
+            }
             if (currentUser.role === 'owner' && !currentUser.isDemo) {
+                startOwnerPresenceHeartbeat();
                 checkAndEnforceSingleDeviceSession();
             }
 
@@ -8145,44 +8359,54 @@
             }
         }
 
-        // ==========================================
-        // REAL-TIME STORE ACTIVITY & HEARTBEAT FOR ADMIN MONITORING
-        // ==========================================
-        async function updateStoreActivity(actionDesc) {
-            if (!isFirebaseConfigured || !db || !currentStoreId || !currentUser || currentUser.isDemo) return;
-            try {
-                const nowIso = new Date().toISOString();
-                const payload = {
-                    activeDeviceLastSeen: nowIso,
-                    lastActiveTime: nowIso
-                };
-                if (actionDesc) {
-                    payload.lastActiveAction = String(actionDesc).substring(0, 180);
-                }
-                await db.collection('stores').doc(currentStoreId).update(payload);
-            } catch (e) {
-                // Non-blocking error catch
-            }
-        }
-        window.updateStoreActivity = updateStoreActivity;
-
         async function logActivity(action, details) {
+            const nowIso = new Date().toISOString();
+            const storeNameVal = (dbSettings && dbSettings.storeName) || 'Toko FortaPOS';
+            const ownerNameVal = (currentUser && currentUser.role === 'owner' ? currentUser.name : (dbSettings && dbSettings.ownerName)) || 'Owner';
             const entry = {
                 storeId: currentStoreId,
+                storeName: storeNameVal,
+                ownerName: ownerNameVal,
                 userName: currentUser ? currentUser.name : 'System',
                 role: currentUser ? currentUser.role : 'system',
                 action,
                 details,
+                paket_aktif: (currentLicense && currentLicense.packageType) || localStorage.getItem('paket_aktif') || 'none',
                 device: navigator.userAgent.includes('Mobile') ? 'Mobile Device' : 'Desktop / PC',
-                timestamp: new Date().toISOString()
+                timestamp: nowIso
             };
 
             let savedToCloud = false;
             if (isFirebaseConfigured && db && currentStoreId && currentUser && !currentUser.isDemo) {
                 try {
+                    const serverTs = (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue)
+                        ? firebase.firestore.FieldValue.serverTimestamp()
+                        : nowIso;
+
+                    // 1. Simpan ke sub-koleksi toko (/stores/{storeId}/activityLogs)
                     await db.collection('stores').doc(currentStoreId).collection('activityLogs').add(entry);
+
+                    // 2. Simpan ke koleksi global (/activity_logs) untuk Dashboard Monitoring Real-Time Admin SaaS
+                    await db.collection('activity_logs').add({
+                        ...entry,
+                        createdAt: serverTs
+                    });
+
+                    // 3. Perbarui ringkasan "Aktivitas Terakhir" & lastSeen pada dokumen /stores/{storeId}
+                    await db.collection('stores').doc(currentStoreId).set({
+                        lastActivity: `${action}: ${details}`,
+                        lastActivityAction: action,
+                        lastActivityDetails: details,
+                        lastActivityBy: entry.userName,
+                        lastActivityAt: serverTs,
+                        lastActivityIso: nowIso,
+                        lastSeen: serverTs,
+                        lastSeenIso: nowIso,
+                        isOnline: true,
+                        onlineStatus: 'online'
+                    }, { merge: true });
+
                     savedToCloud = true;
-                    if (typeof updateStoreActivity === "function") updateStoreActivity(`${action}: ${details}`);
                 } catch (err) {
                     console.warn("[FortaPOS] Gagal sinkronisasi log aktivitas ke Firestore (fallback lokal aktif):", err.message || err);
                 }
