@@ -2588,13 +2588,14 @@
                             <i class="fa-solid fa-user-plus text-emerald-600"></i>
                             <span>Tambah / Atur Karyawan Baru</span>
                         </h3>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">ID Karyawan (Cth: EMP-001)</label>
-                            <input type="text" id="empNewId" placeholder="Otomatis (Cth: EMP-001)" class="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-white uppercase font-mono outline-none focus:ring-1 focus:ring-emerald-500">
-                        </div>
+                        <input type="hidden" id="empNewId" value="">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Karyawan</label>
                             <input type="text" id="empNewName" required placeholder="Cth: Siti Aminah" class="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor WhatsApp Karyawan</label>
+                            <input type="tel" id="employeeWhatsapp" placeholder="No WhatsApp Karyawan (Cth: 628xxx)..." class="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-white font-mono outline-none focus:ring-1 focus:ring-emerald-500">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Password Karyawan</label>
@@ -2609,7 +2610,7 @@
                                 <tr>
                                     <th class="p-3">ID Karyawan</th>
                                     <th class="p-3">Nama Karyawan</th>
-                                    <th class="p-3">Store ID</th>
+                                    <th class="p-3">Whatsapp</th>
                                     <th class="p-3 text-center">Status</th>
                                     <th class="p-3">Password Login</th>
                                     <th class="p-3 text-right">Aksi</th>
@@ -6769,8 +6770,8 @@
         };
 
         const DEFAULT_DEMO_EMPLOYEES = [
-            { firestoreId: 'emp_demo_1', employeeId: 'EMP-001', empId: 'EMP-001', name: 'Siti Aminah', storeId: 'FORTA-DEMO', status: 'online', password: '123' },
-            { firestoreId: 'emp_demo_2', employeeId: 'EMP-002', empId: 'EMP-002', name: 'Budi Santoso', storeId: 'FORTA-DEMO', status: 'offline', password: '123' }
+            { firestoreId: 'emp_demo_1', employeeId: 'EMP-001', empId: 'EMP-001', name: 'Siti Aminah', whatsapp: '6281234567890', storeId: 'FORTA-DEMO', status: 'online', password: '123' },
+            { firestoreId: 'emp_demo_2', employeeId: 'EMP-002', empId: 'EMP-002', name: 'Budi Santoso', whatsapp: '6285712345678', storeId: 'FORTA-DEMO', status: 'offline', password: '123' }
         ];
 
         function getInitialDemoTransactions() {
@@ -11269,7 +11270,18 @@
             const idInput = document.getElementById('empNewId');
             let customId = (idInput ? idInput.value : '').trim().toUpperCase();
             const name = document.getElementById('empNewName').value.trim();
+            const waInput = document.getElementById('employeeWhatsapp');
+            const rawWhatsapp = (waInput ? waInput.value : '').trim();
             const password = document.getElementById('empNewPass').value.trim();
+
+            if (!name) {
+                showToast('Nama karyawan wajib diisi!', 'error');
+                return;
+            }
+            if (!password) {
+                showToast('Password karyawan wajib diisi!', 'error');
+                return;
+            }
 
             if (!customId) {
                 customId = generateEmployeeId();
@@ -11277,12 +11289,15 @@
                 customId = 'EMP-' + customId;
             }
 
+            const cleanWhatsapp = sanitizeWhatsappNumber(rawWhatsapp);
+
             const empData = {
                 storeId: currentStoreId,
                 role: "karyawan",
                 employeeId: customId,
                 empId: customId,
                 name,
+                whatsapp: cleanWhatsapp,
                 password,
                 status: 'offline',
                 lastActive: new Date().toISOString(),
@@ -11301,9 +11316,10 @@
 
                 if (idInput) idInput.value = '';
                 document.getElementById('empNewName').value = '';
+                if (waInput) waInput.value = '';
                 document.getElementById('empNewPass').value = '';
                 showToast(`Karyawan ${name} (${customId}) berhasil ditambahkan!`);
-                logActivity('Manajemen Karyawan', `Menambahkan karyawan baru: ${name} (${customId})`);
+                logActivity('Manajemen Karyawan', `Menambahkan karyawan baru: ${name} (${customId}) - WA: ${cleanWhatsapp}`);
             } catch (err) {
                 showToast('Gagal menyimpan karyawan: ' + err.message, 'error');
             }
@@ -11343,12 +11359,20 @@
                 const statusBadge = isOnline
                     ? `<span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center space-x-1.5 shadow-xs"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span>Online</span></span>`
                     : `<span class="bg-red-100 text-red-700 px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center space-x-1.5 shadow-xs"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span><span>Offline</span></span>`;
+                const empWhatsapp = e.whatsapp ? String(e.whatsapp).trim() : '';
 
                 return `
                     <tr class="hover:bg-slate-50 transition">
                         <td class="p-3 font-mono font-bold text-emerald-700">${escapeHtml(empId)}</td>
                         <td class="p-3 font-bold text-slate-800">${escapeHtml(e.name)}</td>
-                        <td class="p-3 font-mono text-slate-600 font-semibold">${escapeHtml(e.storeId || currentStoreId)}</td>
+                        <td class="p-3 font-mono font-semibold text-slate-700">
+                            ${empWhatsapp ? `
+                                <a href="https://wa.me/${escapeHtml(empWhatsapp)}" target="_blank" class="text-emerald-600 hover:text-emerald-700 hover:underline inline-flex items-center gap-1 font-mono" title="Hubungi Karyawan via WhatsApp">
+                                    <i class="fa-brands fa-whatsapp text-emerald-500 text-sm"></i>
+                                    <span>${escapeHtml(empWhatsapp)}</span>
+                                </a>
+                            ` : '<span class="text-slate-400 font-mono">-</span>'}
+                        </td>
                         <td class="p-3 text-center">${statusBadge}</td>
                         <td class="p-3 font-mono text-slate-500">${escapeHtml(e.password)}</td>
                         <td class="p-3 text-right">
