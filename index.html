@@ -22,7 +22,7 @@
                 window.addEventListener('error', function(event) {
                     if (
                         (event.filename && event.filename.indexOf('chrome-extension://') !== -1) ||
-                        (event.message && (event.message.indexOf('fetch') !== -1 || event.message.indexOf('getter') !== -1)) ||
+                        (event.message && (event.message.indexOf('fetch') !== -1 || event.message.indexOf('getter') !== -1 || event.message.indexOf('Cannot set property') !== -1)) ||
                         (event.error && event.error.stack && event.error.stack.indexOf('chrome-extension://') !== -1)
                     ) {
                         event.preventDefault();
@@ -33,7 +33,7 @@
 
                 window.addEventListener('unhandledrejection', function(event) {
                     var reason = String(event.reason || (event.reason && event.reason.stack) || '');
-                    if (reason.indexOf('fetch') !== -1 || reason.indexOf('getter') !== -1 || reason.indexOf('chrome-extension') !== -1) {
+                    if (reason.indexOf('fetch') !== -1 || reason.indexOf('getter') !== -1 || reason.indexOf('chrome-extension') !== -1 || reason.indexOf('Cannot set property') !== -1) {
                         event.preventDefault();
                         event.stopImmediatePropagation();
                     }
@@ -44,18 +44,11 @@
                 var _origFetch = (typeof window !== 'undefined' && window.fetch) ? window.fetch.bind(window) : null;
                 var _currentFetch = _origFetch;
                 var _fetchDesc = {
-                    get: function() { return _currentFetch; },
+                    get: function() { return _currentFetch || _origFetch; },
                     set: function(fn) { _currentFetch = fn; },
                     configurable: true,
                     enumerable: true
                 };
-
-                try {
-                    var ownDesc = Object.getOwnPropertyDescriptor(window, 'fetch');
-                    if (ownDesc && !ownDesc.set && ownDesc.configurable) {
-                        delete window.fetch;
-                    }
-                } catch (e0) {}
 
                 try {
                     Object.defineProperty(window, 'fetch', _fetchDesc);
@@ -63,26 +56,30 @@
 
                 try {
                     if (typeof Window !== 'undefined' && Window.prototype) {
-                        var protoDesc = Object.getOwnPropertyDescriptor(Window.prototype, 'fetch');
-                        if (protoDesc && !protoDesc.set && protoDesc.configurable) {
-                            delete Window.prototype.fetch;
-                        }
                         Object.defineProperty(Window.prototype, 'fetch', _fetchDesc);
                     }
                 } catch (e2) {}
+
+                try {
+                    if (window.__proto__) {
+                        Object.defineProperty(window.__proto__, 'fetch', _fetchDesc);
+                    }
+                } catch (e3) {}
             } catch (err) {}
 
             try {
                 const origError = console.error;
                 console.error = function(...args) {
                     const str = args.map(a => typeof a === 'object' ? (a && a.message ? a.message : JSON.stringify(a)) : String(a)).join(' ');
-                    if (str.includes('fortapos-subscribe') || 
+                    if (str.includes('chrome-extension://') ||
+                        str.includes('Cannot set property fetch') ||
+                        str.includes('fortapos-subscribe') || 
                         str.includes('Could not reach Cloud Firestore') || 
                         str.includes('permission-denied') || 
                         str.includes('Missing or insufficient permissions') ||
                         str.includes('insufficient permissions') ||
                         str.includes('@firebase/firestore')) {
-                        console.warn("[FortaPOS Mode Lokal / Offline]", str);
+                        console.warn("[FortaPOS Mode Lokal / Suppressed Ext Error]", str);
                         return;
                     }
                     origError.apply(console, args);
@@ -90,7 +87,6 @@
             } catch (e) {}
         })();
     </script>
-
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -161,11 +157,19 @@
             dbTransactions = [];
             dbEmployees = [];
             dbCustomers = [];
-            if (unsubOnlineOrders) { try { unsubOnlineOrders(); } catch(e){} unsubOnlineOrders = null; }
-            if (unsubStoreRealtimeLicense) { try { unsubStoreRealtimeLicense(); } catch(e){} unsubStoreRealtimeLicense = null; }
-            if (unsubActiveLicenseDoc) { try { unsubActiveLicenseDoc(); } catch(e){} unsubActiveLicenseDoc = null; }
-            unsubscribers.forEach(unsub => { try { unsub(); } catch(e){} });
-            unsubscribers = [];
+            if (typeof unsubscribeAllListeners === 'function') {
+                try { unsubscribeAllListeners(); } catch(e) {}
+            } else {
+                if (typeof unsubscribeStore !== 'undefined' && unsubscribeStore) { try { unsubscribeStore(); } catch(e){} unsubscribeStore = null; }
+                if (typeof unsubscribeLicense !== 'undefined' && unsubscribeLicense) { try { unsubscribeLicense(); } catch(e){} unsubscribeLicense = null; }
+                if (typeof unsubOnlineOrders !== 'undefined' && unsubOnlineOrders) { try { unsubOnlineOrders(); } catch(e){} unsubOnlineOrders = null; }
+                if (typeof unsubStoreRealtimeLicense !== 'undefined' && unsubStoreRealtimeLicense) { try { unsubStoreRealtimeLicense(); } catch(e){} unsubStoreRealtimeLicense = null; }
+                if (typeof unsubActiveLicenseDoc !== 'undefined' && unsubActiveLicenseDoc) { try { unsubActiveLicenseDoc(); } catch(e){} unsubActiveLicenseDoc = null; }
+                if (typeof unsubscribers !== 'undefined' && Array.isArray(unsubscribers)) {
+                    unsubscribers.forEach(unsub => { try { if (typeof unsub === 'function') unsub(); } catch(e){} });
+                    unsubscribers = [];
+                }
+            }
         }
         window.clearInMemoryAndSessionState = clearInMemoryAndSessionState;
 
@@ -5183,6 +5187,48 @@
         const UPLOAD_PRESET = "fortaPOS_Produk";
         const CLOUDINARY_API_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
 
+        // ==============================================================
+        // 1. TOP-LEVEL UNSUBSCRIBE LISTENER FIRESTORE (ANTI DATA LEAK)
+        // Menampung dan mematikan seluruh real-time listener saat logout / ganti akun
+        // ==============================================================
+        let unsubscribeStore = null;
+        let unsubscribeLicense = null;
+        let unsubscribeProducts = null;
+        let unsubscribeCategories = null;
+        let unsubscribeUnits = null;
+        let unsubscribeCustomers = null;
+        let unsubscribeTransactions = null;
+        let unsubscribeEmployees = null;
+        let unsubscribeLogs = null;
+        let unsubscribeShipping = null;
+        let unsubscribeOnlineOrders = null;
+        let unsubscribePackagesPricing = null;
+
+        function unsubscribeAllListeners() {
+            console.log('[FortaPOS] Mematikan seluruh active real-time Firestore listeners...');
+            if (unsubscribeStore) { try { unsubscribeStore(); } catch (e) {} unsubscribeStore = null; }
+            if (unsubscribeLicense) { try { unsubscribeLicense(); } catch (e) {} unsubscribeLicense = null; }
+            if (unsubStoreRealtimeLicense) { try { unsubStoreRealtimeLicense(); } catch (e) {} unsubStoreRealtimeLicense = null; }
+            if (unsubActiveLicenseDoc) { try { unsubActiveLicenseDoc(); } catch (e) {} unsubActiveLicenseDoc = null; }
+            if (unsubscribeProducts) { try { unsubscribeProducts(); } catch (e) {} unsubscribeProducts = null; }
+            if (unsubscribeCategories) { try { unsubscribeCategories(); } catch (e) {} unsubscribeCategories = null; }
+            if (unsubscribeUnits) { try { unsubscribeUnits(); } catch (e) {} unsubscribeUnits = null; }
+            if (unsubscribeCustomers) { try { unsubscribeCustomers(); } catch (e) {} unsubscribeCustomers = null; }
+            if (unsubscribeTransactions) { try { unsubscribeTransactions(); } catch (e) {} unsubscribeTransactions = null; }
+            if (unsubscribeEmployees) { try { unsubscribeEmployees(); } catch (e) {} unsubscribeEmployees = null; }
+            if (unsubscribeLogs) { try { unsubscribeLogs(); } catch (e) {} unsubscribeLogs = null; }
+            if (unsubscribeShipping) { try { unsubscribeShipping(); } catch (e) {} unsubscribeShipping = null; }
+            if (unsubscribeOnlineOrders) { try { unsubscribeOnlineOrders(); } catch (e) {} unsubscribeOnlineOrders = null; }
+            if (unsubOnlineOrders) { try { unsubOnlineOrders(); } catch (e) {} unsubOnlineOrders = null; }
+            if (unsubscribePackagesPricing) { try { unsubscribePackagesPricing(); } catch (e) {} unsubscribePackagesPricing = null; }
+            if (unsubPackagesPricing) { try { unsubPackagesPricing(); } catch (e) {} unsubPackagesPricing = null; }
+            if (typeof unsubscribers !== 'undefined' && Array.isArray(unsubscribers)) {
+                unsubscribers.forEach(unsub => { try { if (typeof unsub === 'function') unsub(); } catch (e) {} });
+                unsubscribers = [];
+            }
+        }
+        window.unsubscribeAllListeners = unsubscribeAllListeners;
+
         // ==========================================
         // FIREBASE INITIALIZATION (Compat Firestore)
         // Menggunakan konfigurasi tunggal window.getFirebaseConfig() tanpa duplikasi variabel
@@ -5535,6 +5581,10 @@
         // Listener Real-Time ke Dokumen Lisensi Aktif (/licenses/{code})
         let unsubActiveLicenseDoc = null;
         function initActiveLicenseDocListener(licenseCode) {
+            if (unsubscribeLicense) {
+                try { unsubscribeLicense(); } catch (e) {}
+                unsubscribeLicense = null;
+            }
             if (unsubActiveLicenseDoc) {
                 try { unsubActiveLicenseDoc(); } catch (e) {}
                 unsubActiveLicenseDoc = null;
@@ -5542,7 +5592,8 @@
             if (!isFirebaseConfigured || !db || !licenseCode || licenseCode === 'TRIAL-BASIC-7D') return;
 
             try {
-                unsubActiveLicenseDoc = db.collection('licenses').doc(licenseCode).onSnapshot((docSnap) => {
+                unsubscribeLicense = db.collection('licenses').doc(licenseCode).onSnapshot((docSnap) => {
+                    unsubActiveLicenseDoc = unsubscribeLicense;
                     if (docSnap.exists) {
                         const lData = docSnap.data();
                         const st = String(lData.status || '').toLowerCase().trim();
@@ -6410,6 +6461,10 @@
 
             updateDurationButtonsPricing();
 
+            if (unsubscribePackagesPricing) {
+                try { unsubscribePackagesPricing(); } catch (e) {}
+                unsubscribePackagesPricing = null;
+            }
             if (unsubPackagesPricing) {
                 try { unsubPackagesPricing(); } catch (e) {}
                 unsubPackagesPricing = null;
@@ -6417,7 +6472,9 @@
 
             if (isFirebaseConfigured && db) {
                 try {
-                    unsubPackagesPricing = db.collection('settings').doc('packages_pricing').onSnapshot(
+                    unsubscribePackagesPricing = db.collection('settings').doc('packages_pricing').onSnapshot(
+                        docSnap => {
+                            unsubPackagesPricing = unsubscribePackagesPricing;
                         docSnap => {
                             if (docSnap.exists) {
                                 const data = docSnap.data() || {};
@@ -6910,8 +6967,20 @@
         async function updateOwnerPresence(isOnlineStatus = true, customActivityText = null) {
             if (!isFirebaseConfigured || !db) return;
             if (!currentUser || currentUser.isDemo) return;
+
+            // ISOLASI KETAT UID: Validasi user Firebase Auth aktif saat ini
+            const authUser = (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) ||
+                             (window.auth && window.auth.currentUser) ||
+                             (window.fbAuth && window.fbAuth.auth && window.fbAuth.auth.currentUser);
+            if (!authUser || !authUser.uid) return;
+            const activeUid = authUser.uid;
+
+            // Jangan biarkan menulis jika storeTarget tidak cocok dengan activeUid yang sedang terautentikasi
             const storeTarget = currentStoreId || currentUser.storeId || currentUser.uid;
-            if (!storeTarget) return;
+            if (!storeTarget || storeTarget !== activeUid) {
+                console.warn('[FortaPOS Protection] Mencegah leak di updateOwnerPresence: storeTarget != activeUid');
+                return;
+            }
 
             // Hanya Owner (atau sesi toko aktif) yang mengupdate kehadiran toko utama
             const isOwnerRole = (currentUser.role === 'owner' || !currentUser.role);
@@ -6921,22 +6990,35 @@
                 ? firebase.firestore.FieldValue.serverTimestamp()
                 : new Date().toISOString();
 
+            // Proteksi data paket: pastikan lisensi memang milik activeUid saat ini
+            let safeLicense = null;
+            let safePaketAktif = 'none';
+            let safeStatusPaket = 'inactive';
+            if (currentLicense && (currentLicense.storeId === activeUid || currentLicense.activatedByStoreId === activeUid)) {
+                safeLicense = currentLicense;
+                safePaketAktif = currentLicense.packageType || 'basic';
+                safeStatusPaket = currentLicense.status || 'active';
+            }
+
             const payload = {
                 uid: storeTarget,
                 storeId: storeTarget,
                 storeName: (dbSettings && dbSettings.storeName) || currentUser.storeName || 'Toko FortaPOS',
                 ownerName: currentUser.name || (dbSettings && dbSettings.ownerName) || 'Owner',
-                email: currentUser.email || '',
+                email: currentUser.email || authUser.email || '',
                 phone: (dbSettings && (dbSettings.ownerWhatsapp || dbSettings.phone)) || '',
                 isOnline: Boolean(isOnlineStatus),
                 onlineStatus: isOnlineStatus ? 'online' : 'offline',
                 lastSeen: serverTs,
                 lastSeenIso: new Date().toISOString(),
-                paket_aktif: (currentLicense && currentLicense.packageType) || localStorage.getItem('paket_aktif') || 'none',
-                status_paket: (currentLicense && currentLicense.status) || localStorage.getItem('status_paket') || 'inactive',
-                license: currentLicense || null,
                 updatedAt: serverTs
             };
+
+            if (safeLicense) {
+                payload.paket_aktif = safePaketAktif;
+                payload.status_paket = safeStatusPaket;
+                payload.license = safeLicense;
+            }
 
             if (customActivityText) {
                 payload.lastActivity = customActivityText;
@@ -6975,10 +7057,16 @@
             // Pasang real-time listener ke dokumen toko agar perubahan lisensi dari Admin langsung tersinkron
             const storeTarget = currentStoreId || currentUser.storeId || currentUser.uid;
             if (isFirebaseConfigured && db && storeTarget) {
+                if (unsubscribeLicense) {
+                    try { unsubscribeLicense(); } catch (e) {}
+                    unsubscribeLicense = null;
+                }
                 if (unsubStoreRealtimeLicense) {
                     try { unsubStoreRealtimeLicense(); } catch (e) {}
+                    unsubStoreRealtimeLicense = null;
                 }
                 unsubStoreRealtimeLicense = db.collection('stores').doc(storeTarget).onSnapshot((docSnap) => {
+                    unsubscribeLicense = unsubStoreRealtimeLicense;
                     if (docSnap.exists) {
                         const sData = docSnap.data();
                         checkAccountStatus(sData);
@@ -8397,151 +8485,160 @@
                 return;
             }
 
-            if (firebaseUser) {
-                const uid = firebaseUser.uid;
-                const email = firebaseUser.email || '';
-                const displayName = firebaseUser.displayName || 'Owner';
-                console.log('[FortaPOS] onAuthStateChanged: User aktif terdeteksi:', email, 'UID:', uid);
+            if (!firebaseUser) {
+                console.log('[FortaPOS] onAuthStateChanged: Tidak ada sesi Firebase Auth aktif / User telah Logout.');
+                // 1. Matikan semua listener aktif lama seketika
+                if (unsubscribeStore) { try { unsubscribeStore(); } catch (e) {} unsubscribeStore = null; }
+                if (unsubscribeLicense) { try { unsubscribeLicense(); } catch (e) {} unsubscribeLicense = null; }
+                unsubscribeAllListeners();
 
-                // Pastikan instance Firestore db sudah siap
-                if (!db && typeof firebase !== 'undefined' && firebase.firestore) {
-                    try {
-                        const activeFb = (typeof window.getFirebaseConfig === 'function') 
-                            ? window.getFirebaseConfig() 
-                            : (window.activeFirebaseConfig || window.defaultFirebaseConfig);
-                        if (!firebase.apps.length) {
-                            firebase.initializeApp(activeFb);
-                        }
-                        db = firebase.firestore();
-                        isFirebaseConfigured = true;
-                    } catch (e) {
-                        console.warn("[FortaPOS] Gagal initializeApp di handleGlobalAuthStateChanged:", e);
-                    }
-                }
-
-                // 2. KETAT: Prioritaskan pengambilan data lisensi & profil toko terbaru dari dokumen /stores/{uid} di Firestore
-                let storeData = null;
-                let latestLicense = null;
-
-                if (isFirebaseConfigured && db) {
-                    try {
-                        const docSnap = await db.collection('stores').doc(uid).get();
-                        if (docSnap.exists) {
-                            storeData = docSnap.data();
-                            if (storeData && storeData.license) {
-                                latestLicense = storeData.license;
-                            }
-                        } else {
-                            const ownSnap = await db.collection('owners').doc(uid).get();
-                            if (ownSnap.exists) {
-                                storeData = ownSnap.data();
-                                if (storeData && storeData.license) {
-                                    latestLicense = storeData.license;
-                                }
-                            }
-                        }
-                    } catch (fsErr) {
-                        console.warn('[FortaPOS] onAuthStateChanged Firestore fetch error:', fsErr);
-                    }
-                }
-
-                // Fallback lokal jika Firestore offline
-                if (!storeData) {
-                    let localOwners = [];
-                    try {
-                        const saved = localStorage.getItem('toko_registered_owners');
-                        if (saved) localOwners = JSON.parse(saved);
-                    } catch (e) {}
-                    storeData = localOwners.find(o => o.uid === uid || (o.email && o.email.toLowerCase() === email.toLowerCase()));
-                    if (storeData && storeData.license) {
-                        latestLicense = storeData.license;
-                    }
-                }
-
-                // Tentukan storeId dan ownerName dari data toko resmi (utamakan UID Owner yang login)
-                const storeId = (storeData && (storeData.storeId || storeData.uid)) ? (storeData.storeId || storeData.uid) : uid;
-                const ownerName = (storeData && (storeData.ownerName || storeData.name)) ? (storeData.ownerName || storeData.name) : displayName;
-
-                // Sinkronkan pengaturan toko & status akun
-                if (storeData) {
-                    checkAccountStatus(storeData);
-                    if (storeData.storeName) dbSettings.storeName = storeData.storeName;
-                    if (storeData.address) dbSettings.address = storeData.address;
-                    if (storeData.phone) dbSettings.phone = storeData.phone;
-                    if (storeData.ownerWhatsapp) dbSettings.ownerWhatsapp = storeData.ownerWhatsapp;
-                    if (storeData.minStockAlert) dbSettings.minStockAlert = storeData.minStockAlert;
-                    localStorage.setItem('toko_hj_nurjanah_db_settings', JSON.stringify(dbSettings));
-                }
-
-                // Prioritaskan lisensi dari Firestore; jika tidak ada, gunakan dari localStorage jika masih valid
-                if (latestLicense) {
-                    currentLicense = {
-                        ...latestLicense,
-                        storeId: storeId,
-                        ownerName: ownerName
-                    };
-                } else {
-                    const savedLic = JSON.parse(localStorage.getItem('fortapos_license_data') || 'null');
-                    if (savedLic && (savedLic.status === 'active' || savedLic.status === 'trial')) {
-                        currentLicense = savedLic;
-                    }
-                }
-
-                // 2. PAKSA PENYIMPANAN DATA SESI DAN LISENSI KE LOCALSTORAGE SEBELUM initAppSession()
-                // Hal ini krusial agar memori lokal browser tidak kembali ke setelan fallback 'HJN-DEMO' atau 'FORTA-DEMO'
-                currentUser = {
-                    uid: uid,
-                    storeId: storeId,
-                    name: ownerName,
-                    role: 'owner',
-                    email: email,
-                    isDemo: false
-                };
-                currentStoreId = storeId;
-
-                localStorage.setItem('toko_hj_nurjanah_session', JSON.stringify(currentUser));
-                if (currentLicense) {
-                    localStorage.setItem('fortapos_license_data', JSON.stringify(currentLicense));
-                }
-
-                console.log('[FortaPOS] Sesi & Lisensi tersimpan persisten. Store ID:', currentStoreId, 'Paket:', currentLicense ? currentLicense.packageType : 'none');
-
-                // Sembunyikan modal login
-                const authModal = document.getElementById('authModal');
-                if (authModal) authModal.classList.add('hidden');
-
-                // Update UI lisensi & navigasi langsung
-                applyLicenseRestrictions();
-                updateNavLicenseBadge();
-                updateLicenseModalCol1UI();
-
-                // Verifikasi lisensi Firestore secara otomatis saat autentikasi Firebase siap
-                await autoCheckSubscriptionFirestore();
-
-                // Jalankan initAppSession() dengan Store ID yang sudah valid
-                initAppSession();
-
-            } else {
-                console.log('[FortaPOS] onAuthStateChanged: Tidak ada sesi Firebase Auth aktif.');
-                const savedSession = JSON.parse(localStorage.getItem('toko_hj_nurjanah_session') || 'null');
-                // Pertahankan sesi karyawan yang login menggunakan Store ID + password
-                if (savedSession && savedSession.role === 'employee') {
-                    console.log('[FortaPOS] Mempertahankan sesi login karyawan:', savedSession.name);
-                    return;
-                }
-                if (savedSession && savedSession.isDemo) {
-                    console.log('[FortaPOS] Mempertahankan sesi Mode Demo.');
-                    return;
-                }
-                // Jika owner tanpa sesi Firebase Auth aktif
+                // 2. Kosongkan seluruh variabel memori state
                 currentUser = null;
-                localStorage.removeItem('toko_hj_nurjanah_session');
+                currentStoreId = null;
+                currentLicense = null;
+                dbProducts = [];
+                dbTransactions = [];
+                dbEmployees = [];
+                dbCustomers = [];
+                cart = [];
+
                 const authModal = document.getElementById('authModal');
                 if (authModal) {
                     authModal.classList.remove('hidden');
                     switchAuthTab('loginOwner');
                 }
+                return;
             }
+
+            // 3. ISOLASI STATE APLIKASI BERDASARKAN USER UID AKTIF:
+            const activeUid = firebaseUser.uid;
+            const email = firebaseUser.email || '';
+            const displayName = firebaseUser.displayName || 'Owner';
+            console.log('[FortaPOS] onAuthStateChanged: User aktif terverifikasi:', email, 'UID:', activeUid);
+
+            // Matikan SEMUA listener akun lama sebelum inisialisasi akun baru
+            if (unsubscribeStore) { try { unsubscribeStore(); } catch (e) {} unsubscribeStore = null; }
+            if (unsubscribeLicense) { try { unsubscribeLicense(); } catch (e) {} unsubscribeLicense = null; }
+            unsubscribeAllListeners();
+
+            // Reset total memori RAM agar sisa data akun lama tidak bocor
+            currentStoreId = activeUid;
+            currentUser = {
+                uid: activeUid,
+                storeId: activeUid,
+                name: displayName,
+                role: 'owner',
+                email: email,
+                isDemo: false
+            };
+            currentLicense = null; // KOSONGKAN lisensi lama! Hanya boleh diisi dari dokumen milik activeUid
+            dbSettings = {
+                storeName: 'Nama Toko',
+                address: '',
+                phone: '',
+                ownerWhatsapp: '',
+                minStockAlert: 5,
+                autoWhatsappStockAlert: true,
+                autoDailyCloudBackup: true
+            };
+            cart = [];
+            dbProducts = [];
+            dbTransactions = [];
+            dbEmployees = [];
+            dbCustomers = [];
+
+            // Pastikan instance Firestore db sudah siap
+            if (!db && typeof firebase !== 'undefined' && firebase.firestore) {
+                try {
+                    const activeFb = (typeof window.getFirebaseConfig === 'function') 
+                        ? window.getFirebaseConfig() 
+                        : (window.activeFirebaseConfig || window.defaultFirebaseConfig);
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(activeFb);
+                    }
+                    db = firebase.firestore();
+                    isFirebaseConfigured = true;
+                } catch (e) {
+                    console.warn("[FortaPOS] Gagal initializeApp di handleGlobalAuthStateChanged:", e);
+                }
+            }
+
+            // BACA STRICT DARI FIRESTORE /stores/{activeUid} MENGGUNAKAN activeUid
+            let storeData = null;
+            let storeLicense = null;
+
+            if (isFirebaseConfigured && db) {
+                try {
+                    const docSnap = await db.collection('stores').doc(activeUid).get();
+                    if (docSnap.exists) {
+                        storeData = docSnap.data();
+                        if (storeData) {
+                            checkAccountStatus(storeData);
+                            if (storeData.storeName) dbSettings.storeName = storeData.storeName;
+                            if (storeData.address) dbSettings.address = storeData.address;
+                            if (storeData.phone) dbSettings.phone = storeData.phone;
+                            if (storeData.ownerWhatsapp) dbSettings.ownerWhatsapp = storeData.ownerWhatsapp;
+                            if (storeData.minStockAlert) dbSettings.minStockAlert = storeData.minStockAlert;
+                            if (storeData.ownerName) currentUser.name = storeData.ownerName;
+
+                            if (storeData.license) {
+                                storeLicense = { ...storeData.license, storeId: activeUid };
+                            }
+                        }
+                    } else {
+                        const ownSnap = await db.collection('owners').doc(activeUid).get();
+                        if (ownSnap.exists) {
+                            storeData = ownSnap.data();
+                            if (storeData) {
+                                if (storeData.storeName) dbSettings.storeName = storeData.storeName;
+                                if (storeData.license) {
+                                    storeLicense = { ...storeData.license, storeId: activeUid };
+                                }
+                            }
+                        }
+                    }
+                } catch (fsErr) {
+                    console.warn('[FortaPOS] onAuthStateChanged Firestore fetch error:', fsErr);
+                }
+            }
+
+            // Terapkan lisensi yang HANYA berasal dari dokumen activeUid milik akun yang sedang login
+            if (storeLicense) {
+                currentLicense = storeLicense;
+                setUidScopedPackageData(activeUid, currentLicense);
+            } else {
+                // Cek apakah ada cache lisensi yang khusus terikat dengan UID ini (bukan UID akun lain!)
+                const uidCachedLicense = getUidScopedPackageData(activeUid);
+                if (uidCachedLicense && uidCachedLicense.storeId === activeUid) {
+                    currentLicense = uidCachedLicense;
+                } else {
+                    currentLicense = null;
+                }
+            }
+
+            // Simpan sesi aktif ke localStorage
+            localStorage.setItem('toko_hj_nurjanah_session', JSON.stringify(currentUser));
+            localStorage.setItem('toko_hj_nurjanah_db_settings', JSON.stringify(dbSettings));
+            if (currentLicense) {
+                syncLicenseToLocalStorage(currentLicense);
+            }
+
+            console.log('[FortaPOS] Sesi & Lisensi tersimpan persisten. Store ID:', currentStoreId, 'Paket:', currentLicense ? currentLicense.packageType : 'none');
+
+            // Sembunyikan modal login
+            const authModal = document.getElementById('authModal');
+            if (authModal) authModal.classList.add('hidden');
+
+            // Update UI lisensi & navigasi langsung
+            applyLicenseRestrictions();
+            updateNavLicenseBadge();
+            updateLicenseModalCol1UI();
+
+            // Verifikasi lisensi Firestore secara otomatis saat autentikasi Firebase siap
+            await autoCheckSubscriptionFirestore();
+
+            // Jalankan initAppSession() dengan Store ID yang sudah valid
+            initAppSession();
         };
 
         async function handleLoginEmployee(e) {
@@ -8769,11 +8866,68 @@
         }
 
         async function logoutApp() {
-            if (hasUnsyncedOfflineTransactions()) {
-                openLogoutOfflineModal();
-                return;
+            // 2. ROMBAK TOTAL FUNGSI LOGOUT (HARD-RESET MEMORI BROWSER):
+            console.log('[FortaPOS] Memulai proses Hard-Reset Logout...');
+
+            // a. Panggil semua fungsi unsubscribe listener
+            if (unsubscribeStore) { try { unsubscribeStore(); } catch (e) {} unsubscribeStore = null; }
+            if (unsubscribeLicense) { try { unsubscribeLicense(); } catch (e) {} unsubscribeLicense = null; }
+            unsubscribeAllListeners();
+
+            if (ownerPresenceInterval) {
+                clearInterval(ownerPresenceInterval);
+                ownerPresenceInterval = null;
             }
-            await performActualLogout();
+
+            if (typeof clearInMemoryAndSessionState === 'function') {
+                clearInMemoryAndSessionState();
+            }
+
+            // b. Jalankan perintah firebase.auth().signOut()
+            const authCompat = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null;
+            const authModular = window.auth || (window.fbAuth && window.fbAuth.auth) || (typeof getAuth === 'function' ? getAuth() : null);
+            const signOutModular = window.signOut || (window.fbAuth && window.fbAuth.signOut) || (typeof signOut === 'function' ? signOut : null);
+
+            let signOutPromise;
+            if (authCompat && typeof authCompat.signOut === 'function') {
+                signOutPromise = authCompat.signOut();
+            } else if (signOutModular && authModular) {
+                signOutPromise = signOutModular(authModular);
+            } else {
+                signOutPromise = Promise.resolve();
+            }
+
+            // c. Di dalam blok .then() setelah sukses signOut, jalankan localStorage.clear(); dan sessionStorage.clear();
+            return signOutPromise.then(() => {
+                console.log('[FortaPOS] Firebase signOut berhasil. Melakukan Hard-Reset LocalStorage & SessionStorage...');
+                try { localStorage.clear(); } catch (e) {}
+                try { sessionStorage.clear(); } catch (e) {}
+
+                // d. Akhiri dengan memicu perintah window.location.reload(true); atau pengalihan halaman secara penuh
+                try {
+                    window.location.reload(true);
+                } catch (e) {
+                    window.location.href = window.location.origin + window.location.pathname;
+                }
+            }).catch(err => {
+                console.warn('[FortaPOS] Warning signOut error, melanjutkan pembersihan memori:', err);
+                try { localStorage.clear(); } catch (e) {}
+                try { sessionStorage.clear(); } catch (e) {}
+                try {
+                    window.location.reload(true);
+                } catch (e) {
+                    window.location.href = window.location.origin + window.location.pathname;
+                }
+            });
+        }
+
+        async function performActualLogout() {
+            return await logoutApp();
+        }
+
+        async function executeConfirmedLogout() {
+            closeLogoutOfflineModal();
+            return await logoutApp();
         }
 
         function openLogoutOfflineModal() {
@@ -8797,115 +8951,19 @@
             downloadEncryptedBackupFile();
             closeLogoutOfflineModal();
             setTimeout(async () => {
-                await performActualLogout();
+                await logoutApp();
             }, 800);
-        }
-
-        async function executeConfirmedLogout() {
-            closeLogoutOfflineModal();
-            await performActualLogout();
-        }
-
-        async function performActualLogout() {
-            showToast('Memproses keluar & membersihkan sesi...', 'info');
-
-            // 0. Set status kehadiran Owner menjadi OFFLINE di Firestore sebelum keluar
-            try {
-                if (typeof stopOwnerPresenceHeartbeat === 'function') {
-                    await stopOwnerPresenceHeartbeat();
-                }
-            } catch (presErr) {
-                console.warn('Gagal update offline presence saat logout:', presErr);
-            }
-
-            // 1. Sign out dari Firebase Authentication resmi
-            try {
-                const authInstance = window.auth || (window.fbAuth && window.fbAuth.auth) || (typeof getAuth === 'function' ? getAuth() : null);
-                const signOutFn = window.signOut || (window.fbAuth && window.fbAuth.signOut) || (typeof signOut === 'function' ? signOut : null);
-                if (signOutFn && authInstance) {
-                    await signOutFn(authInstance);
-                    console.log('[FortaPOS] Firebase Auth signOut berhasil dieksekusi.');
-                }
-            } catch (soErr) {
-                console.warn('Gagal signOut Firebase Auth:', soErr);
-            }
-
-            // 2. Reset field currentActiveDevice di Firestore jika role owner
-            if (currentUser && currentUser.role === 'owner' && currentStoreId && isFirebaseConfigured && db) {
-                try {
-                    await db.collection('stores').doc(currentStoreId).update({
-                        currentActiveDevice: "",
-                        activeDeviceId: "",
-                        activeDeviceLastSeen: null
-                    });
-                    console.log('Field currentActiveDevice berhasil di-reset bersih di Firestore sebelum logout.');
-                } catch (e) {
-                    console.warn('Gagal mengosongkan currentActiveDevice saat logout:', e);
-                }
-            }
-
-            // 3. Jika karyawan, update status offline di Firestore
-            if (currentUser && (currentUser.role === 'karyawan' || currentUser.role === 'employee') && currentUser.employeeDocId && isFirebaseConfigured && db) {
-                try {
-                    await db.collection('stores').doc(currentStoreId || currentUser.storeId).collection('employees').doc(currentUser.employeeDocId).update({
-                        status: 'offline',
-                        lastActive: new Date().toISOString()
-                    });
-                } catch (e) {
-                    console.warn('Gagal update status offline:', e);
-                }
-            }
-
-            // 4. Putuskan listeners realtime Firestore
-            if (unsubOnlineOrders) { try { unsubOnlineOrders(); } catch(e) {} unsubOnlineOrders = null; }
-            unsubscribers.forEach(unsub => { try { unsub(); } catch (e) {} });
-            unsubscribers = [];
-
-            // 5. HAPUS KETAT SELURUH TOKEN SESI, STORE ID, DAN KUNCI ENKRIPSI DARI LOCALSTORAGE
-            localStorage.removeItem('toko_hj_nurjanah_session');
-            localStorage.removeItem('fortapos_active_device_id');
-            localStorage.removeItem('fortapos_temp_secret');
-
-            if (currentUser && currentUser.isDemo) {
-                clearDemoDataStorage();
-            }
-
-            // 6. Bersihkan variabel memori
-            currentUser = null;
-            currentStoreId = null;
-
-            // 7. Muat ulang halaman secara bersih untuk mencegah celah auto-login
-            location.reload();
         }
 
         async function handleLogOut() {
             return await logoutApp();
         }
 
-        async function handleLogin(eOrCredentials) {
-            if (eOrCredentials && typeof eOrCredentials.preventDefault === 'function') {
-                return await handleLoginOwner(eOrCredentials);
-            }
-            if (eOrCredentials && eOrCredentials.email && eOrCredentials.password) {
-                const emailInput = document.getElementById('ownerLoginEmail');
-                const passInput = document.getElementById('ownerLoginPass');
-                if (emailInput) emailInput.value = eOrCredentials.email;
-                if (passInput) passInput.value = eOrCredentials.password;
-            }
-            const fakeEvent = { preventDefault: () => {} };
-            return await handleLoginOwner(fakeEvent);
-        }
-
-        window.handleLogOut = handleLogOut;
-        window.handleLogin = handleLogin;
+        window.handleLogOut = logoutApp;
         window.logoutApp = logoutApp;
+        window.performActualLogout = logoutApp;
+        window.executeConfirmedLogout = logoutApp;
         
-        
-        
-        
-        
-        
-
         window.addEventListener('beforeunload', function() {
             if (currentUser && (currentUser.role === 'karyawan' || currentUser.role === 'employee') && currentUser.employeeDocId && isFirebaseConfigured && db) {
                 try {
@@ -9122,7 +9180,7 @@
                 loadShippingConfig();
 
                 if (isFirebaseConfigured && db && currentStoreId && (!currentUser || !currentUser.isDemo)) {
-                    const unsubShipping = db.collection("stores").doc(currentStoreId).collection("config").doc("shipping").onSnapshot(
+                    unsubscribeShipping = db.collection("stores").doc(currentStoreId).collection("config").doc("shipping").onSnapshot(
                         doc => {
                             if (doc.exists) {
                                 const data = doc.data();
@@ -9157,7 +9215,7 @@
                         },
                         err => console.warn("Shipping onSnapshot error:", err)
                     );
-                    unsubscribers.push(unsubShipping);
+                    unsubscribers.push(unsubscribeShipping);
                 }
             }
 
@@ -9169,8 +9227,18 @@
             }
             updateBankShippingUIForRole();
 
+            // 1. Kondisional: matikan listener akun lama jika unsubscribeStore atau unsubscribeLicense bernilai tidak null
+            if (unsubscribeStore) {
+                try { unsubscribeStore(); } catch (e) {}
+                unsubscribeStore = null;
+            }
+            if (unsubscribeLicense) {
+                try { unsubscribeLicense(); } catch (e) {}
+                unsubscribeLicense = null;
+            }
+
             if (isFirebaseConfigured && db) {
-                const unsubStore = db.collection('stores').doc(currentStoreId).onSnapshot(
+                unsubscribeStore = db.collection('stores').doc(currentStoreId).onSnapshot(
                     doc => {
                         if (doc.exists) {
                             const data = doc.data();
@@ -9224,9 +9292,9 @@
                     },
                     err => handleFirestoreError(err)
                 );
-                unsubscribers.push(unsubStore);
+                unsubscribers.push(unsubscribeStore);
 
-                const unsubProd = db.collection('stores').doc(currentStoreId).collection('products').onSnapshot(
+                unsubscribeProducts = db.collection('stores').doc(currentStoreId).collection('products').onSnapshot(
                     snapshot => {
                         dbProducts = [];
                         snapshot.forEach(doc => {
@@ -9254,9 +9322,9 @@
                     },
                     err => handleFirestoreError(err)
                 );
-                unsubscribers.push(unsubProd);
+                unsubscribers.push(unsubscribeProducts);
 
-                const unsubCat = db.collection('stores').doc(currentStoreId).collection('categories').doc('list').onSnapshot(
+                unsubscribeCategories = db.collection('stores').doc(currentStoreId).collection('categories').doc('list').onSnapshot(
                     doc => {
                         if (doc.exists && doc.data().list) {
                             dbCategories = doc.data().list;
@@ -9266,9 +9334,9 @@
                     },
                     err => handleFirestoreError(err)
                 );
-                unsubscribers.push(unsubCat);
+                unsubscribers.push(unsubscribeCategories);
 
-                const unsubUnit = db.collection('stores').doc(currentStoreId).collection('units').doc('list').onSnapshot(
+                unsubscribeUnits = db.collection('stores').doc(currentStoreId).collection('units').doc('list').onSnapshot(
                     doc => {
                         if (doc.exists && doc.data().list) {
                             dbUnits = doc.data().list;
@@ -9277,9 +9345,9 @@
                     },
                     err => handleFirestoreError(err)
                 );
-                unsubscribers.push(unsubUnit);
+                unsubscribers.push(unsubscribeUnits);
 
-                const unsubCust = db.collection('stores').doc(currentStoreId).collection('customers').onSnapshot(
+                unsubscribeCustomers = db.collection('stores').doc(currentStoreId).collection('customers').onSnapshot(
                     snapshot => {
                         dbCustomers = [];
                         snapshot.forEach(doc => {
@@ -9297,9 +9365,9 @@
                     },
                     err => handleFirestoreError(err)
                 );
-                unsubscribers.push(unsubCust);
+                unsubscribers.push(unsubscribeCustomers);
 
-                const unsubTrx = db.collection('stores').doc(currentStoreId).collection('transactions').onSnapshot(
+                unsubscribeTransactions = db.collection('stores').doc(currentStoreId).collection('transactions').onSnapshot(
                     snapshot => {
                         dbTransactions = [];
                         snapshot.forEach(doc => {
@@ -9319,9 +9387,9 @@
                     },
                     err => handleFirestoreError(err)
                 );
-                unsubscribers.push(unsubTrx);
+                unsubscribers.push(unsubscribeTransactions);
 
-                const unsubEmp = db.collection('stores').doc(currentStoreId).collection('employees').onSnapshot(
+                unsubscribeEmployees = db.collection('stores').doc(currentStoreId).collection('employees').onSnapshot(
                     snapshot => {
                         dbEmployees = [];
                         snapshot.forEach(doc => {
@@ -9332,9 +9400,9 @@
                     },
                     err => handleFirestoreError(err)
                 );
-                unsubscribers.push(unsubEmp);
+                unsubscribers.push(unsubscribeEmployees);
 
-                const unsubLogs = db.collection('stores').doc(currentStoreId).collection('activityLogs').onSnapshot(
+                unsubscribeLogs = db.collection('stores').doc(currentStoreId).collection('activityLogs').onSnapshot(
                     snapshot => {
                         dbActivityLogs = [];
                         snapshot.forEach(doc => {
@@ -9345,7 +9413,7 @@
                     },
                     err => handleFirestoreError(err)
                 );
-                unsubscribers.push(unsubLogs);
+                unsubscribers.push(unsubscribeLogs);
             } else {
                 loadSettingsToUI();
                 updateStockAlertBadges();
@@ -14853,6 +14921,10 @@
         // 2. LISTENER REAL-TIME FIRESTORE: /stores/{storeId}/online_orders
         // ==============================================================
         function initOnlineOrdersListener() {
+            if (unsubscribeOnlineOrders) {
+                try { unsubscribeOnlineOrders(); } catch (e) {}
+                unsubscribeOnlineOrders = null;
+            }
             if (unsubOnlineOrders) {
                 try { unsubOnlineOrders(); } catch (e) {}
                 unsubOnlineOrders = null;
@@ -14876,7 +14948,9 @@
                         ordersQuery = ordersRef.where("cashierId", "==", activeEmpId);
                     }
 
-                    unsubOnlineOrders = ordersQuery.onSnapshot(
+                    unsubscribeOnlineOrders = ordersQuery.onSnapshot(
+                        snapshot => {
+                            unsubOnlineOrders = unsubscribeOnlineOrders;
                         snapshot => {
                             let pendingCount = 0;
 
