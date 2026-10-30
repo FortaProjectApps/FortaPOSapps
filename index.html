@@ -1850,7 +1850,7 @@
 
             <!-- 4. DAFTAR ARSIP PESANAN ONLINE SELESAI (SISTEM LIST POP-UP MINIMALIS) -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="p-3.5 bg-slate-50/90 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2.5 sm:gap-3">
+                <div class="p-3.5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between gap-2.5">
                     <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
                         <!-- Master Checkbox Arsip (Khusus Owner) -->
                         <div class="flex items-center shrink-0" id="archivedSelectAllBox" title="Pilih Semua Arsip">
@@ -1860,22 +1860,15 @@
                             <i class="fa-solid fa-box-archive"></i>
                         </div>
                         <div class="min-w-0">
-                            <!-- Penyatuan Teks Jumlah Total Arsip Menjadi Satu Baris Horizontal (flex flex-row items-center whitespace-nowrap space-x-1 font-semibold) -->
-                            <div class="flex flex-row items-center whitespace-nowrap space-x-1 font-semibold">
-                                <h3 class="font-bold text-slate-800 text-xs sm:text-sm whitespace-nowrap">Daftar Arsip Pesanan Selesai</h3>
-                                <span id="archivedOrdersCountBadge" class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">0 Arsip</span>
+                            <h3 class="font-bold text-slate-800 text-xs sm:text-sm leading-tight">Daftar Arsip Pesanan Selesai</h3>
+                            <div class="mt-0.5">
+                                <span id="archivedOrdersCountBadge" class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full inline-block">0 Arsip</span>
                             </div>
-                            <p class="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">Pesanan online yang telah selesai (Verified) atau dibatalkan (cancelled/expired)</p>
                         </div>
                     </div>
 
-                    <!-- Re-posisi Tombol Opsi Arsip ke Kanan pada Tampilan HP (ml-auto shrink-0) -->
+                    <!-- Re-posisi Tombol Opsi Arsip ke Kanan Sejajar Horizontal (ml-auto shrink-0) -->
                     <div class="flex items-center space-x-2 ml-auto shrink-0">
-                        <span class="text-[11px] text-slate-500 hidden md:inline-flex items-center gap-1 mr-1">
-                            <i class="fa-solid fa-hand-pointer text-emerald-600"></i>
-                            <span>Klik baris untuk detail belanja</span>
-                        </span>
-
                         <!-- Tombol Menu Dropdown Opsi dengan Ikon Pengaturan (Khusus Owner) -->
                         <div class="relative inline-block text-left ml-auto shrink-0" id="archivedActionMenuContainer">
                             <button type="button" onclick="toggleArchivedActionMenu()" id="btnArchivedActionMenu" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1.5 shadow transition cursor-pointer" title="Opsi Tindakan Arsip Pesanan">
@@ -1897,7 +1890,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Wadah List Ringkas 1 Baris Minimalis -->
                 <div id="archivedOrdersListContainer" class="divide-y divide-slate-100 max-h-80 overflow-y-auto">
                     <div class="text-center py-8 text-slate-400 text-xs">
@@ -3182,8 +3174,8 @@
     <nav id="bottomNavbar" class="fixed bottom-0 left-0 right-0 z-50 bg-[#0d3b36]/85 dark:bg-[#072421]/90 backdrop-blur-md border-t border-[#14b8a6]/30 shadow-[0_-4px_25px_rgba(13,59,54,0.4)] select-none">
         <div class="max-w-lg mx-auto px-2">
             <div class="grid grid-cols-5 h-16 sm:h-18 items-center">
-                <!-- 1. TAB PALING KIRI: PELANGGAN ONLINE (POIN 3: PALING KIRI) -->
-                <button onclick="switchTab('pelanggan-online')" id="tabBtn-pelanggan-online" class="bottom-tab-btn relative flex flex-col items-center justify-center h-full py-1 text-teal-200/75 hover:text-white font-medium transition-colors group cursor-pointer">
+                <!-- 1. TAB PALING KIRI: PELANGGAN ONLINE -->
+                <button onclick="window.scrollTo({ top: 0, behavior: 'smooth' }); switchTab('pelanggan-online')" id="tabBtn-pelanggan-online" class="bottom-tab-btn relative flex flex-col items-center justify-center h-full py-1 text-teal-200/75 hover:text-white font-medium transition-colors group cursor-pointer">
                     <span class="active-indicator hidden absolute top-0 w-8 h-1 bg-[#2dd4bf] rounded-b-full shadow-[0_0_8px_rgba(45,212,191,0.8)]"></span>
                     <span class="relative">
                         <svg class="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-active:scale-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3196,35 +3188,8 @@
                     <span class="text-[10px] sm:text-[11px] mt-1 tracking-tight leading-tight">Online</span>
                 </button>
 
-                <!-- 2. TAB: RIWAYAT TRANSAKSI (UNTUK AKSES POIN 6 & POIN 7) -->
-                <button onclick="switchTab('riwayat')" id="tabBtn-riwayat" class="bottom-tab-btn relative flex flex-col items-center justify-center h-full py-1 text-teal-200/75 hover:text-white font-medium transition-colors group cursor-pointer">
-                    <span class="active-indicator hidden absolute top-0 w-8 h-1 bg-[#2dd4bf] rounded-b-full shadow-[0_0_8px_rgba(45,212,191,0.8)]"></span>
-                    <svg class="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-active:scale-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/>
-                        <path d="M16 8h-8"/>
-                        <path d="M16 12h-8"/>
-                        <path d="M11 16H8"/>
-                    </svg>
-                    <span class="text-[10px] sm:text-[11px] mt-1 tracking-tight leading-tight">Riwayat</span>
-                </button>
-
-                <!-- 3. TAB TENGAH: TRANSAKSI (POIN 3: TENGAH, IKON KERANJANG/TROLI BELANJA, NO BACKGROUND, MERAH MENYALA & DIPERBESAR PROPORSIONAL) -->
-                <button onclick="switchTab('transaksi')" id="tabBtn-transaksi" class="bottom-tab-btn relative flex flex-col items-center justify-center h-full py-1 bg-transparent border-0 text-red-500 hover:text-red-400 font-extrabold active-tab transition-transform group cursor-pointer active:scale-95">
-                    <span class="active-indicator absolute top-0 w-8 h-1 bg-red-500 rounded-b-full shadow-[0_0_10px_rgba(239,68,68,0.9)]"></span>
-                    <div class="relative flex items-center justify-center">
-                        <!-- Ikon Keranjang Belanja/Troli Belanja Diperbesar Proporsional, Merah Menyala -->
-                        <svg class="w-7 h-7 sm:w-8 sm:h-8 text-red-500 transition-transform group-hover:scale-110 drop-shadow-[0_0_8px_rgba(239,68,68,0.7)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="8" cy="21" r="1"/>
-                            <circle cx="19" cy="21" r="1"/>
-                            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-                        </svg>
-                        <span id="bottomCartCountBadge" class="hidden absolute -top-1.5 -right-2.5 bg-rose-600 text-white font-extrabold text-[9px] px-1.5 py-0.2 rounded-full shadow-sm">0</span>
-                    </div>
-                    <span class="text-[10px] sm:text-[11px] mt-1 tracking-tight leading-tight font-extrabold text-red-400">Transaksi</span>
-                </button>
-
-                <!-- 4. TAB: STOK (PINDAH POSISI KE POSISI PENGATURAN LAMA) -->
-                <button onclick="switchTab('stok')" id="tabBtn-stok" class="bottom-tab-btn relative flex flex-col items-center justify-center h-full py-1 text-teal-200/75 hover:text-white font-medium transition-colors group cursor-pointer">
+                <!-- 2. TAB: STOK (DITUKAR POSISINYA DENGAN RIWAYAT) -->
+                <button onclick="window.scrollTo({ top: 0, behavior: 'smooth' }); switchTab('stok')" id="tabBtn-stok" class="bottom-tab-btn relative flex flex-col items-center justify-center h-full py-1 text-teal-200/75 hover:text-white font-medium transition-colors group cursor-pointer">
                     <span class="active-indicator hidden absolute top-0 w-8 h-1 bg-[#2dd4bf] rounded-b-full shadow-[0_0_8px_rgba(45,212,191,0.8)]"></span>
                     <span class="relative">
                         <svg class="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-active:scale-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3238,8 +3203,34 @@
                     <span class="text-[10px] sm:text-[11px] mt-1 tracking-tight leading-tight">Stok</span>
                 </button>
 
-                <!-- 5. TAB: PENGATURAN (PINDAH POSISI KE POSISI STOK LAMA) -->
-                <button onclick="switchTab('pengaturan')" id="tabBtn-pengaturan" class="bottom-tab-btn relative flex flex-col items-center justify-center h-full py-1 text-teal-200/75 hover:text-white font-medium transition-colors group cursor-pointer">
+                <!-- 3. TAB TENGAH: TRANSAKSI -->
+                <button onclick="window.scrollTo({ top: 0, behavior: 'smooth' }); switchTab('transaksi')" id="tabBtn-transaksi" class="bottom-tab-btn relative flex flex-col items-center justify-center h-full py-1 bg-transparent border-0 text-red-500 hover:text-red-400 font-extrabold active-tab transition-transform group cursor-pointer active:scale-95">
+                    <span class="active-indicator absolute top-0 w-8 h-1 bg-red-500 rounded-b-full shadow-[0_0_10px_rgba(239,68,68,0.9)]"></span>
+                    <div class="relative flex items-center justify-center">
+                        <svg class="w-7 h-7 sm:w-8 sm:h-8 text-red-500 transition-transform group-hover:scale-110 drop-shadow-[0_0_8px_rgba(239,68,68,0.7)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="8" cy="21" r="1"/>
+                            <circle cx="19" cy="21" r="1"/>
+                            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+                        </svg>
+                        <span id="bottomCartCountBadge" class="hidden absolute -top-1.5 -right-2.5 bg-rose-600 text-white font-extrabold text-[9px] px-1.5 py-0.2 rounded-full shadow-sm">0</span>
+                    </div>
+                    <span class="text-[10px] sm:text-[11px] mt-1 tracking-tight leading-tight font-extrabold text-red-400">Transaksi</span>
+                </button>
+
+                <!-- 4. TAB: RIWAYAT TRANSAKSI (DITUKAR DENGAN STOK) -->
+                <button onclick="window.scrollTo({ top: 0, behavior: 'smooth' }); switchTab('riwayat')" id="tabBtn-riwayat" class="bottom-tab-btn relative flex flex-col items-center justify-center h-full py-1 text-teal-200/75 hover:text-white font-medium transition-colors group cursor-pointer">
+                    <span class="active-indicator hidden absolute top-0 w-8 h-1 bg-[#2dd4bf] rounded-b-full shadow-[0_0_8px_rgba(45,212,191,0.8)]"></span>
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-active:scale-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/>
+                        <path d="M16 8h-8"/>
+                        <path d="M16 12h-8"/>
+                        <path d="M11 16H8"/>
+                    </svg>
+                    <span class="text-[10px] sm:text-[11px] mt-1 tracking-tight leading-tight">Riwayat</span>
+                </button>
+
+                <!-- 5. TAB: PENGATURAN -->
+                <button onclick="window.scrollTo({ top: 0, behavior: 'smooth' }); switchTab('pengaturan')" id="tabBtn-pengaturan" class="bottom-tab-btn relative flex flex-col items-center justify-center h-full py-1 text-teal-200/75 hover:text-white font-medium transition-colors group cursor-pointer">
                     <span class="active-indicator hidden absolute top-0 w-8 h-1 bg-[#2dd4bf] rounded-b-full shadow-[0_0_8px_rgba(45,212,191,0.8)]"></span>
                     <svg class="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-active:scale-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="3"/>
@@ -3250,7 +3241,6 @@
             </div>
         </div>
     </nav>
-
 <!-- MODAL: Tambah/Edit Produk -->
     <div id="productModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
@@ -4616,7 +4606,6 @@
                     </div>
                     <div>
                         <h3 class="text-base font-bold text-slate-800 dark:text-white">Rekening Bank dan Ongkir</h3>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Atur nomor rekening transfer bank dan tarif pengantaran pesanan online</p>
                     </div>
                 </div>
                 <button type="button" onclick="closeBankShippingModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center transition cursor-pointer shrink-0" title="Tutup">
@@ -4628,21 +4617,10 @@
             <div class="overflow-y-auto pr-1 flex-grow space-y-4 text-xs sm:text-sm">
 <!-- KARTU PENGATURAN REKENING BANK DAN ONGKIR (POP-UP CONTENT) -->
             <div id="shippingSettingsCard" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <div class="flex flex-wrap justify-between items-center border-b pb-2.5 gap-2">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm shrink-0">
-                            <i class="fa-solid fa-building-columns"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-                                <span>Rekening Bank dan Ongkir</span>
-                            </h3>
-                            <p class="text-[11px] text-slate-500 font-medium">Atur nomor rekening transfer bank dan tarif pengantaran pesanan online</p>
-                        </div>
-                    </div>
+                <div class="flex justify-end items-center border-b border-slate-100 dark:border-slate-800 pb-2.5 gap-2">
                     <div class="flex items-center space-x-1.5">
-                        <span id="bankStatusBadge" class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">Bank: OFF</span>
-                        <span id="shippingStatusBadge" class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">Ongkir: OFF</span>
+                        <span id="bankStatusBadge" class="text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full font-bold">Bank: OFF</span>
+                        <span id="shippingStatusBadge" class="text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full font-bold">Ongkir: OFF</span>
                     </div>
                 </div>
 
@@ -5027,6 +5005,7 @@
 
             currentLicense = {
                 code: 'TRIAL-BASIC-7D',
+                licenseCode: 'TRIAL-BASIC-7D',
                 packageType: 'basic',
                 packageName: 'Paket Basic (Masa Percobaan 7 Hari)',
                 durationDays: 7,
@@ -5034,12 +5013,16 @@
                 isTrial: true,
                 activatedAt: now.toISOString(),
                 expiresAt: expiresAt,
+                expiredAt: expiresAt,
+                expiryDate: expiresAt,
                 ownerName: ownerNameVal,
                 storeId: activeStoreTarget,
                 fallbackAt: now.toISOString()
             };
 
             syncLicenseToLocalStorage(currentLicense);
+            localStorage.setItem('active_license_id', 'TRIAL-BASIC-7D');
+            localStorage.setItem('kode_lisensi', 'TRIAL-BASIC-7D');
             applyLicenseRestrictions();
             updateNavLicenseBadge();
             updateLicenseModalCol1UI();
@@ -5073,6 +5056,189 @@
         }
         window.fallbackToDefaultTrial = fallbackToDefaultTrial;
 
+        // ==============================================================
+        // AUTO-FETCH & VERIFY LICENSE ON INITIALIZATION (KETENTUAN UTAMA)
+        // Memeriksa dan memvalidasi ulang data lisensi aktif dari Firestore (/licenses/{licenseId})
+        // serta memeriksa status toko (/stores/{storeId}) secara real-time saat startup/refresh
+        // ==============================================================
+        async function autoCheckSubscriptionFirestore() {
+            console.log('[FortaPOS] Menjalankan autoCheckSubscriptionFirestore()...');
+
+            // 0. Pastikan instance Firestore db sudah siap
+            if (!db && typeof firebase !== 'undefined' && firebase.firestore) {
+                try {
+                    const activeFb = (typeof window.getFirebaseConfig === 'function') 
+                        ? window.getFirebaseConfig() 
+                        : (window.activeFirebaseConfig || window.defaultFirebaseConfig);
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(activeFb);
+                    }
+                    db = firebase.firestore();
+                    isFirebaseConfigured = true;
+                } catch (e) {
+                    console.warn('[FortaPOS] Inisialisasi db di autoCheckSubscriptionFirestore:', e);
+                }
+            }
+
+            // 1. Tentukan Store ID aktif
+            const authUser = (window.auth && window.auth.currentUser) ||
+                             (typeof getAuth === 'function' && getAuth() ? getAuth().currentUser : null) ||
+                             (window.fbAuth && window.fbAuth.auth ? window.fbAuth.auth.currentUser : null);
+            const storeTarget = (authUser && authUser.uid) || 
+                                (currentUser && (currentUser.storeId || currentUser.uid)) || 
+                                currentStoreId || 
+                                localStorage.getItem('fortapos_store_id');
+
+            // 2. SINKRONISASI SUSPEND AKUN OWNER (Poin 3)
+            if (isFirebaseConfigured && db && storeTarget) {
+                try {
+                    const storeSnap = await db.collection('stores').doc(storeTarget).get();
+                    if (storeSnap.exists) {
+                        const storeData = storeSnap.data();
+                        checkAccountStatus(storeData);
+                        if (window._isAccountSuspended) {
+                            console.warn('[FortaPOS] Akun toko berstatus SUSPENDED / DISABLED.');
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('[FortaPOS] Gagal periksa accountStatus stores:', err);
+                }
+            }
+
+            // 3. Baca data active_license_id atau ID lisensi terkait dari localStorage
+            let licenseId = localStorage.getItem('active_license_id') || 
+                            localStorage.getItem('kode_lisensi');
+
+            if (!licenseId) {
+                try {
+                    const savedLic = JSON.parse(localStorage.getItem('fortapos_license_data') || 'null');
+                    if (savedLic && (savedLic.code || savedLic.licenseCode)) {
+                        licenseId = savedLic.code || savedLic.licenseCode;
+                    }
+                } catch (e) {}
+            }
+
+            // Fallback: baca dari dokumen toko di Firestore jika di localStorage belum ada
+            if ((!licenseId || licenseId === 'TRIAL-BASIC-7D') && isFirebaseConfigured && db && storeTarget) {
+                try {
+                    const storeDoc = await db.collection('stores').doc(storeTarget).get();
+                    if (storeDoc.exists) {
+                        const sData = storeDoc.data();
+                        if (sData.license && (sData.license.code || sData.license.licenseCode)) {
+                            licenseId = sData.license.code || sData.license.licenseCode;
+                        } else if (sData.licenseCode) {
+                            licenseId = sData.licenseCode;
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            if (!licenseId || licenseId === 'TRIAL-BASIC-7D') {
+                console.log('[FortaPOS] Tidak ada ID lisensi aktif resmi yang tersimpan untuk divalidasi.');
+                return;
+            }
+
+            licenseId = String(licenseId).trim().replace(/\s+/g, '').toUpperCase();
+            localStorage.setItem('active_license_id', licenseId);
+            localStorage.setItem('kode_lisensi', licenseId);
+
+            // 4. Fetch real-time ke db.collection('licenses').doc(licenseId).get()
+            if (isFirebaseConfigured && db) {
+                try {
+                    console.log(`[FortaPOS] Memverifikasi lisensi ${licenseId} di /licenses...`);
+                    let licSnap = await db.collection('licenses').doc(licenseId).get();
+                    let lData = null;
+
+                    if (licSnap.exists) {
+                        lData = licSnap.data();
+                    } else {
+                        // Cek query fallback jika document ID acak
+                        const q1 = await db.collection('licenses').where('licenseCode', '==', licenseId).limit(1).get();
+                        if (!q1.empty) {
+                            licSnap = q1.docs[0];
+                            lData = licSnap.data();
+                        } else {
+                            const q2 = await db.collection('licenses').where('code', '==', licenseId).limit(1).get();
+                            if (!q2.empty) {
+                                licSnap = q2.docs[0];
+                                lData = licSnap.data();
+                            }
+                        }
+                    }
+
+                    if (lData) {
+                        const statusVal = String(lData.status || '').toLowerCase().trim();
+                        const packageNameVal = lData.packageName || (lData.packageType === 'premium' ? 'Paket Premium' : 'Paket Basic');
+                        const rawExpiry = lData.expiredAt || lData.expiryDate || lData.expiresAt;
+                        
+                        let expiryDate = null;
+                        if (rawExpiry) {
+                            if (typeof rawExpiry.toDate === 'function') {
+                                expiryDate = rawExpiry.toDate();
+                            } else {
+                                expiryDate = new Date(rawExpiry);
+                            }
+                        }
+                        const now = new Date();
+                        const isNotExpired = expiryDate && !isNaN(expiryDate.getTime()) && (expiryDate.getTime() > now.getTime());
+
+                        const isPremium = String(lData.packageType || lData.packageName || '').toLowerCase().includes('premium');
+                        const packageType = isPremium ? 'premium' : 'basic';
+
+                        // 5. SINKRONISASI DAN UPDATE STATUS PAKET REAL-TIME (Poin 2)
+                        if (statusVal === 'active' && isNotExpired) {
+                            console.log(`[FortaPOS] Lisensi ${licenseId} VALID & AKTIF (${packageNameVal}). Mengaktifkan fitur paket.`);
+                            const expiryIso = expiryDate.toISOString();
+                            const ownerNameVal = lData.activatedByOwnerName || lData.ownerName || (currentUser ? currentUser.name : '') || (dbSettings && dbSettings.ownerName) || 'Owner';
+
+                            currentLicense = {
+                                code: licenseId,
+                                licenseCode: licenseId,
+                                packageType: packageType,
+                                packageName: packageNameVal,
+                                durationDays: Number(lData.durationDays || lData.duration) || 30,
+                                status: 'active',
+                                isTrial: false,
+                                activatedAt: lData.activatedAt || new Date().toISOString(),
+                                expiresAt: expiryIso,
+                                expiredAt: expiryIso,
+                                expiryDate: expiryIso,
+                                ownerName: ownerNameVal,
+                                storeId: storeTarget || lData.activatedByStoreId || ''
+                            };
+
+                            syncLicenseToLocalStorage(currentLicense);
+                            localStorage.setItem('active_license_id', licenseId);
+                            localStorage.setItem('kode_lisensi', licenseId);
+
+                            // Paksa sistem kasir langsung mengaktifkan fitur paket tanpa meminta kode lisensi lagi
+                            applyLicenseRestrictions();
+                            updateNavLicenseBadge();
+                            updateLicenseModalCol1UI();
+
+                            const licModal = document.getElementById('licenseModal');
+                            if (licModal && !isNewOwnerRegistrationPending) {
+                                licModal.classList.add('hidden');
+                            }
+
+                            // Pasang listener real-time onSnapshot ke dokumen lisensi
+                            initActiveLicenseDocListener(licenseId);
+                        } else {
+                            console.warn(`[FortaPOS] Lisensi ${licenseId} di Firestore berstatus tidak aktif (status=${statusVal}, validDate=${isNotExpired}). Fallback ke Trial.`);
+                            fallbackToDefaultTrial(statusVal === 'cancelled' ? 'dibatalkan oleh Pengembang' : 'telah kedaluwarsa');
+                        }
+                    } else {
+                        console.warn(`[FortaPOS] Dokumen lisensi ${licenseId} tidak ditemukan di Firestore. Fallback ke Trial.`);
+                        fallbackToDefaultTrial('tidak ditemukan di database');
+                    }
+                } catch (err) {
+                    console.error('[FortaPOS] Kesalahan saat autoCheckSubscriptionFirestore:', err);
+                }
+            }
+        }
+        window.autoCheckSubscriptionFirestore = autoCheckSubscriptionFirestore;
+
         // Listener Real-Time ke Dokumen Lisensi Aktif (/licenses/{code})
         let unsubActiveLicenseDoc = null;
         function initActiveLicenseDocListener(licenseCode) {
@@ -5087,10 +5253,33 @@
                     if (docSnap.exists) {
                         const lData = docSnap.data();
                         const st = String(lData.status || '').toLowerCase().trim();
-                        const isCancelled = st === 'cancelled' || st === 'expired' || st === 'inactive' || st === 'unused' || lData.isUsed === false;
-                        if (isCancelled && currentLicense && currentLicense.status === 'active' && currentLicense.code === licenseCode) {
-                            console.warn('[FortaPOS] Deteksi pembatalan lisensi di /licenses/' + licenseCode, lData);
-                            fallbackToDefaultTrial('dibatalkan oleh Pengembang');
+                        const rawExpiry = lData.expiredAt || lData.expiryDate || lData.expiresAt;
+                        let expiryDate = null;
+                        if (rawExpiry) {
+                            expiryDate = typeof rawExpiry.toDate === 'function' ? rawExpiry.toDate() : new Date(rawExpiry);
+                        }
+                        const isExpired = expiryDate && !isNaN(expiryDate.getTime()) && (expiryDate.getTime() <= Date.now());
+                        const isCancelled = st === 'cancelled' || st === 'expired' || st === 'inactive' || isExpired;
+
+                        if (isCancelled && currentLicense && (currentLicense.status === 'active' || currentLicense.packageType === 'premium') && currentLicense.code === licenseCode) {
+                            console.warn('[FortaPOS] Deteksi pembatalan/kedaluwarsa lisensi di /licenses/' + licenseCode, lData);
+                            fallbackToDefaultTrial(st === 'cancelled' ? 'dibatalkan oleh Pengembang' : 'telah kedaluwarsa');
+                        } else if (st === 'active' && !isExpired) {
+                            const isPremium = String(lData.packageType || lData.packageName || '').toLowerCase().includes('premium');
+                            const packageType = isPremium ? 'premium' : 'basic';
+                            const packageNameVal = lData.packageName || (packageType === 'premium' ? 'Paket Premium' : 'Paket Basic');
+                            currentLicense.status = 'active';
+                            currentLicense.packageType = packageType;
+                            currentLicense.packageName = packageNameVal;
+                            if (expiryDate) {
+                                currentLicense.expiresAt = expiryDate.toISOString();
+                                currentLicense.expiredAt = expiryDate.toISOString();
+                                currentLicense.expiryDate = expiryDate.toISOString();
+                            }
+                            syncLicenseToLocalStorage(currentLicense);
+                            applyLicenseRestrictions();
+                            updateNavLicenseBadge();
+                            updateLicenseModalCol1UI();
                         }
                     } else {
                         // Lisensi dihapus oleh Admin
@@ -6009,8 +6198,10 @@
         function isLicenseActive() {
             if (!currentLicense) return false;
             if (currentLicense.status !== 'active' && currentLicense.status !== 'trial') return false;
-            if (!currentLicense.expiresAt) return false;
-            return new Date(currentLicense.expiresAt) > new Date();
+            const exp = currentLicense.expiresAt || currentLicense.expiredAt || currentLicense.expiryDate;
+            if (!exp) return false;
+            const d = new Date(exp);
+            return !isNaN(d.getTime()) && (d > new Date());
         }
 
         // Fungsi Helper: Cek apakah akun sedang dalam status aktif berlangganan secara resmi/sah (bukan trial/kosong)
@@ -6018,12 +6209,14 @@
             if (!currentLicense) return false;
             if (currentLicense.status !== 'active') return false;
             if (currentLicense.isTrial === true) return false;
-            const code = (currentLicense.code || '').toUpperCase();
+            const code = (currentLicense.code || currentLicense.licenseCode || '').toUpperCase();
             if (code.includes('TRIAL') || code === 'TRIAL-BASIC-7D') {
                 return false;
             }
-            if (!currentLicense.expiresAt) return false;
-            return new Date(currentLicense.expiresAt) > new Date();
+            const exp = currentLicense.expiresAt || currentLicense.expiredAt || currentLicense.expiryDate;
+            if (!exp) return false;
+            const d = new Date(exp);
+            return !isNaN(d.getTime()) && (d > new Date());
         }
 
         function openLicenseModal(options = {}) {
@@ -6402,8 +6595,13 @@
                 localStorage.setItem('nama_paket', licData.packageName || 'Belum Aktif');
                 localStorage.setItem('status_paket', licData.status || 'inactive');
                 localStorage.setItem('durasi_paket', String(licData.duration || licData.durationDays || 0));
-                localStorage.setItem('kode_lisensi', licData.licenseCode || licData.code || '');
-                localStorage.setItem('expired_paket', licData.expiryDate || licData.expiresAt || '');
+                const codeVal = licData.licenseCode || licData.code || '';
+                localStorage.setItem('kode_lisensi', codeVal);
+                if (codeVal && codeVal !== 'TRIAL-BASIC-7D') {
+                    localStorage.setItem('active_license_id', codeVal);
+                }
+                const expVal = licData.expiredAt || licData.expiryDate || licData.expiresAt || '';
+                localStorage.setItem('expired_paket', expVal);
             } catch (e) {
                 console.warn('Gagal sinkronisasi LocalStorage paket:', e);
             }
@@ -7095,12 +7293,22 @@
         // ==========================================
         // INITIALIZATION
         // ==========================================
+        // Panggilan otomatis saat DOM selesai dimuat
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (typeof autoCheckSubscriptionFirestore === 'function') {
+                await autoCheckSubscriptionFirestore();
+            }
+        });
+
         window.onload = async function() {
             initTheme();
             initLocalStorageData();
             initPackagesPricingListener();
             
             updateFirebaseStatusUI();
+
+            // SUNTIK AUTO-FETCH & VERIFY LICENSE ON INITIALIZATION (Poin 1)
+            await autoCheckSubscriptionFirestore();
 
             if (!isFirebaseConfigured) {
                 const banner = document.getElementById('demoModeBanner');
@@ -7965,6 +8173,9 @@
                 applyLicenseRestrictions();
                 updateNavLicenseBadge();
                 updateLicenseModalCol1UI();
+
+                // Verifikasi lisensi Firestore secara otomatis saat autentikasi Firebase siap
+                await autoCheckSubscriptionFirestore();
 
                 // Jalankan initAppSession() dengan Store ID yang sudah valid
                 initAppSession();
@@ -8873,6 +9084,7 @@
         }
 
         function switchTab(tabId) {
+            try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) {}
             // Map legacy tab IDs to the unified Pengaturan hub or open respective modal
             if (tabId === 'kategoriPelanggan' || tabId === 'printer' || tabId === 'logAktivitas') {
                 const subMap = {
