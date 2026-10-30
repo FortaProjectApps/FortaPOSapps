@@ -15,17 +15,62 @@
     <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,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">
     <link rel="apple-touch-icon" href="/logo.png">
 
+    <!-- Polyfill Proteksi Property window.fetch untuk Mencegah Error Chrome Extension -->
     <script>
         (function() {
             try {
-                let _fetch = window.fetch ? window.fetch.bind(window) : null;
-                Object.defineProperty(window, 'fetch', {
-                    get() { return _fetch; },
-                    set(fn) { _fetch = fn; },
+                window.addEventListener('error', function(event) {
+                    if (
+                        (event.filename && event.filename.indexOf('chrome-extension://') !== -1) ||
+                        (event.message && (event.message.indexOf('fetch') !== -1 || event.message.indexOf('getter') !== -1)) ||
+                        (event.error && event.error.stack && event.error.stack.indexOf('chrome-extension://') !== -1)
+                    ) {
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                        return true;
+                    }
+                }, true);
+
+                window.addEventListener('unhandledrejection', function(event) {
+                    var reason = String(event.reason || (event.reason && event.reason.stack) || '');
+                    if (reason.indexOf('fetch') !== -1 || reason.indexOf('getter') !== -1 || reason.indexOf('chrome-extension') !== -1) {
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                    }
+                }, true);
+            } catch (e) {}
+
+            try {
+                var _origFetch = (typeof window !== 'undefined' && window.fetch) ? window.fetch.bind(window) : null;
+                var _currentFetch = _origFetch;
+                var _fetchDesc = {
+                    get: function() { return _currentFetch; },
+                    set: function(fn) { _currentFetch = fn; },
                     configurable: true,
                     enumerable: true
-                });
-            } catch (e) {}
+                };
+
+                try {
+                    var ownDesc = Object.getOwnPropertyDescriptor(window, 'fetch');
+                    if (ownDesc && !ownDesc.set && ownDesc.configurable) {
+                        delete window.fetch;
+                    }
+                } catch (e0) {}
+
+                try {
+                    Object.defineProperty(window, 'fetch', _fetchDesc);
+                } catch (e1) {}
+
+                try {
+                    if (typeof Window !== 'undefined' && Window.prototype) {
+                        var protoDesc = Object.getOwnPropertyDescriptor(Window.prototype, 'fetch');
+                        if (protoDesc && !protoDesc.set && protoDesc.configurable) {
+                            delete Window.prototype.fetch;
+                        }
+                        Object.defineProperty(Window.prototype, 'fetch', _fetchDesc);
+                    }
+                } catch (e2) {}
+            } catch (err) {}
 
             try {
                 const origError = console.error;
@@ -62,6 +107,239 @@
     <!-- Single Source of Truth: Firebase Configuration -->
     <script>
         // DISAMAKAN DENGAN PANEL ADMIN SAAS (Project ID: fortaposall)
+
+        // ==============================================================
+        // 3. LOGIKA ISOLASI PAKET ANTAR AKUN (ANTI-COLLISION MULTI-ACCOUNT)
+        // & PENGUNCIAN ERAT PAKET LANGGANAN PADA FIREBASE UID
+        // ==============================================================
+        function getActiveUid() {
+            return (currentUser && (currentUser.uid || currentUser.storeId)) || currentStoreId || 'guest';
+        }
+
+        function setUidScopedPackageData(uid, licData) {
+            if (!uid || !licData) return;
+            try {
+                const prefix = uid + '_';
+                localStorage.setItem(prefix + 'active_package', licData.packageType || 'basic');
+                localStorage.setItem(prefix + 'license_data', JSON.stringify(licData));
+                localStorage.setItem(prefix + 'status_paket', licData.status || 'active');
+                localStorage.setItem(prefix + 'kode_lisensi', licData.code || licData.licenseCode || '');
+                localStorage.setItem(prefix + 'expired_paket', licData.expiresAt || licData.expiryDate || '');
+                localStorage.setItem(prefix + 'is_trial', licData.isTrial ? 'true' : 'false');
+                localStorage.setItem(prefix + 'device_id', getOrCreateDeviceId());
+
+                // Pointer aktif saat ini
+                localStorage.setItem('fortapos_active_uid', uid);
+                localStorage.setItem('fortapos_license_data', JSON.stringify(licData));
+                localStorage.setItem('paket_aktif', licData.packageType || 'basic');
+                localStorage.setItem('status_paket', licData.status || 'active');
+            } catch (e) {
+                console.warn('[Storage] Gagal setUidScopedPackageData:', e);
+            }
+        }
+        window.setUidScopedPackageData = setUidScopedPackageData;
+
+        function getUidScopedPackageData(uid) {
+            if (!uid) return null;
+            try {
+                const prefix = uid + '_';
+                const raw = localStorage.getItem(prefix + 'license_data');
+                if (raw) return JSON.parse(raw);
+            } catch (e) {}
+            return null;
+        }
+        window.getUidScopedPackageData = getUidScopedPackageData;
+
+        // Pembersihan RAM State total untuk mencegah percampuran data antar akun
+        function clearInMemoryAndSessionState() {
+            console.log('[FortaPOS] Membersihkan seluruh state RAM dan session memori...');
+            currentUser = null;
+            currentStoreId = null;
+            currentLicense = null;
+            cart = [];
+            dbProducts = [];
+            dbTransactions = [];
+            dbEmployees = [];
+            dbCustomers = [];
+            if (unsubOnlineOrders) { try { unsubOnlineOrders(); } catch(e){} unsubOnlineOrders = null; }
+            if (unsubStoreRealtimeLicense) { try { unsubStoreRealtimeLicense(); } catch(e){} unsubStoreRealtimeLicense = null; }
+            if (unsubActiveLicenseDoc) { try { unsubActiveLicenseDoc(); } catch(e){} unsubActiveLicenseDoc = null; }
+            unsubscribers.forEach(unsub => { try { unsub(); } catch(e){} });
+            unsubscribers = [];
+        }
+        window.clearInMemoryAndSessionState = clearInMemoryAndSessionState;
+
+        // ==============================================================
+        // 5. FITUR LUPA PASSWORD & EMAIL VERIFICATION VIA FIREBASE AUTH
+        // ==============================================================
+        function openForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            const emailInp = document.getElementById('resetPasswordEmail');
+            const ownerEmailInp = document.getElementById('ownerLoginEmail');
+            if (emailInp && ownerEmailInp && ownerEmailInp.value) {
+                emailInp.value = ownerEmailInp.value.trim();
+            }
+            if (modal) modal.classList.remove('hidden');
+        }
+        window.openForgotPasswordModal = openForgotPasswordModal;
+
+        function closeForgotPasswordModal() {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (modal) modal.classList.add('hidden');
+        }
+        window.closeForgotPasswordModal = closeForgotPasswordModal;
+
+        async function handleSendPasswordReset(e) {
+            if (e) e.preventDefault();
+            const emailInput = document.getElementById('resetPasswordEmail');
+            const email = (emailInput ? emailInput.value : '').trim();
+            if (!email) {
+                showToast('Masukkan alamat email Owner terlebih dahulu!', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmitPasswordReset');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i><span>Mengirim email reset...</span>';
+            }
+
+            try {
+                // Memanggil fungsi Firebase Auth resmi sendPasswordResetEmail
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    await firebase.auth().sendPasswordResetEmail(email);
+                } else if (window.auth && typeof window.auth.sendPasswordResetEmail === 'function') {
+                    await window.auth.sendPasswordResetEmail(email);
+                } else {
+                    const authInst = window.auth || (window.fbAuth && window.fbAuth.auth);
+                    const resetFn = window.sendPasswordResetEmail || (window.fbAuth && window.fbAuth.sendPasswordResetEmail);
+                    if (resetFn && authInst) {
+                        await resetFn(authInst, email);
+                    } else {
+                        throw new Error('Modul Firebase Auth sendPasswordResetEmail belum siap.');
+                    }
+                }
+
+                playBeep('success');
+                triggerHapticFeedback(80);
+                showToast('Tautan reset password telah dikirim ke ' + email + '! Silakan periksa inbox / spam email Anda.', 'success');
+                closeForgotPasswordModal();
+                logActivity('Reset Password', 'Mengirim email permohonan reset password ke: ' + email);
+            } catch (err) {
+                console.error('Password reset error:', err);
+                playBeep('error');
+                let msg = 'Gagal mengirim email reset password: ' + err.message;
+                if (err.code === 'auth/user-not-found') {
+                    msg = 'Alamat email tidak terdaftar di sistem FortaPOS Firebase Auth!';
+                } else if (err.code === 'auth/invalid-email') {
+                    msg = 'Format penulisan email salah atau tidak valid!';
+                } else if (err.code === 'auth/too-many-requests') {
+                    msg = 'Terlalu banyak permintaan dalam waktu singkat. Silakan coba beberapa saat lagi.';
+                } else if (err.code === 'auth/network-request-failed') {
+                    msg = 'Koneksi jaringan terputus. Pastikan perangkat Anda terhubung ke internet.';
+                }
+                showToast(msg, 'error');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-paper-plane text-xs"></i><span>Kirim Tautan Reset Password</span>';
+                }
+            }
+        }
+        window.handleSendPasswordReset = handleSendPasswordReset;
+
+        let pendingVerificationEmail = '';
+        function openEmailVerificationModal(targetEmail = '') {
+            const modal = document.getElementById('emailVerificationModal');
+            const targetEl = document.getElementById('verificationEmailTarget');
+            const emailToUse = targetEmail || (currentUser && currentUser.email) || (document.getElementById('ownerLoginEmail')?.value) || 'email@anda.com';
+            pendingVerificationEmail = emailToUse;
+            if (targetEl) targetEl.innerText = emailToUse;
+            if (modal) modal.classList.remove('hidden');
+        }
+        window.openEmailVerificationModal = openEmailVerificationModal;
+
+        function closeEmailVerificationModal() {
+            const modal = document.getElementById('emailVerificationModal');
+            if (modal) modal.classList.add('hidden');
+        }
+        window.closeEmailVerificationModal = closeEmailVerificationModal;
+
+        async function resendVerificationEmail() {
+            const btn = document.getElementById('btnResendEmailVerification');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i><span>Mengirim ulang...</span>';
+            }
+            try {
+                const authUser = (window.auth && window.auth.currentUser) ||
+                                 (typeof getAuth === 'function' && getAuth() ? getAuth().currentUser : null) ||
+                                 (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser);
+
+                if (authUser) {
+                    if (typeof authUser.sendEmailVerification === 'function') {
+                        await authUser.sendEmailVerification();
+                    } else if (window.sendEmailVerification) {
+                        await window.sendEmailVerification(authUser);
+                    }
+                    playBeep('success');
+                    showToast('Email verifikasi berhasil dikirim ulang! Silakan periksa inbox / spam Anda.', 'success');
+                } else {
+                    showToast('Silakan login ke akun Owner terlebih dahulu untuk memicu pengiriman ulang email verifikasi.', 'info');
+                }
+            } catch (err) {
+                console.warn('Gagal resend email verification:', err);
+                let msg = 'Gagal mengirim ulang email verifikasi: ' + err.message;
+                if (err.code === 'auth/too-many-requests') {
+                    msg = 'Pengiriman email terlalu sering. Tunggu 1 menit sebelum mencoba lagi.';
+                }
+                showToast(msg, 'error');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-rotate-right text-xs"></i><span>Kirim Ulang Email Verifikasi</span>';
+                }
+            }
+        }
+        window.resendVerificationEmail = resendVerificationEmail;
+
+        async function checkEmailVerificationStatus() {
+            const btn = document.getElementById('btnCheckEmailVerification');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i><span>Memeriksa status...</span>';
+            }
+            try {
+                const authUser = (window.auth && window.auth.currentUser) ||
+                                 (typeof getAuth === 'function' && getAuth() ? getAuth().currentUser : null) ||
+                                 (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser);
+
+                if (authUser) {
+                    await authUser.reload();
+                    if (authUser.emailVerified) {
+                        playBeep('success');
+                        triggerHapticFeedback(80);
+                        showToast('Email Anda BERHASIL DIVERIFIKASI! Selamat datang di FortaPOS.', 'success');
+                        closeEmailVerificationModal();
+                        initAppSession();
+                    } else {
+                        playBeep('warning');
+                        showToast('Email belum terverifikasi. Mohon klik tautan verifikasi yang ada di email Anda.', 'warning');
+                    }
+                } else {
+                    showToast('Silakan login terlebih dahulu untuk memverifikasi akun Anda.', 'info');
+                }
+            } catch (err) {
+                showToast('Pemeriksaan verifikasi gagal: ' + err.message, 'error');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-circle-check text-xs"></i><span>Saya Sudah Verifikasi / Lanjut Masuk</span>';
+                }
+            }
+        }
+        window.checkEmailVerificationStatus = checkEmailVerificationStatus;
+
         // Agar koleksi /licenses, /stores, /owners, & /activity_logs terhubung 100%!
         window.defaultFirebaseConfig = {
     apiKey: "AIzaSyDLP4Jnfw1nJYqlY6Y_8ZzcVaLe3QYVyv8",
@@ -1317,6 +1595,19 @@
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
                     <input type="password" id="ownerLoginPass" required placeholder="Masukkan Password" class="w-full p-3 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                 </div>
+                
+            <!-- Links Lupa Password & Verifikasi Email -->
+            <div class="flex items-center justify-between text-xs pt-1">
+                <button type="button" onclick="openForgotPasswordModal()" class="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 font-semibold cursor-pointer transition flex items-center gap-1">
+                    <i class="fa-solid fa-key text-[10px]"></i>
+                    <span>Lupa Password?</span>
+                </button>
+                <button type="button" onclick="openEmailVerificationModal()" class="text-slate-500 hover:text-slate-700 dark:text-slate-400 font-medium cursor-pointer transition flex items-center gap-1">
+                    <i class="fa-solid fa-envelope-circle-check text-[10px]"></i>
+                    <span>Verifikasi Email</span>
+                </button>
+            </div>
+
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow transition text-sm flex items-center justify-center space-x-2 cursor-pointer">
                     <i class="fa-solid fa-right-to-bracket"></i>
                     <span>Masuk Sebagai Owner</span>
@@ -5021,6 +5312,8 @@
             };
 
             syncLicenseToLocalStorage(currentLicense);
+                // 3. LOGIKA ISOLASI PAKET ANTAR AKUN
+                setUidScopedPackageData(ownerStoreId, storeLicenseObject);
             localStorage.setItem('active_license_id', 'TRIAL-BASIC-7D');
             localStorage.setItem('kode_lisensi', 'TRIAL-BASIC-7D');
             applyLicenseRestrictions();
@@ -6948,7 +7241,12 @@
                     const targetRef = licenseDocRef || db.collection('licenses').doc(licenseDocId);
                     await targetRef.set(unifiedLicenseUpdate, { merge: true });
 
-                    const storeUpdatePayload = {
+                    // 2. LOGIKA AKTIVASI LISENSI & PEMBERSIHAN OTOMATIS (WIPE TRIAL DATA)
+                const storeUpdatePayload = {
+                    trialData: (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue) ? firebase.firestore.FieldValue.delete() : null,
+                    isTrial: false,
+                    trialActivatedAt: (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue) ? firebase.firestore.FieldValue.delete() : null,
+                    trialExpiresAt: (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue) ? firebase.firestore.FieldValue.delete() : null,
                         uid: ownerStoreId,
                         storeId: ownerStoreId,
                         storeName: storeNameVal,
@@ -7727,22 +8025,37 @@
             const uid = user.uid;
             console.log('[FortaPOS] Berhasil registrasi Firebase Auth. UID:', uid);
 
-            // Buat dokumen profil toko baru di Firestore pada koleksi 'stores' dan 'owners' menggunakan UID tersebut sebagai Document ID
+            // 5a. Picu pengiriman email verifikasi resmi via Firebase Auth
+            try {
+                if (typeof user.sendEmailVerification === 'function') {
+                    await user.sendEmailVerification();
+                } else if (window.sendEmailVerification) {
+                    await window.sendEmailVerification(user);
+                }
+                console.log('[FortaPOS] Email verifikasi berhasil dikirim ke:', email);
+            } catch (evErr) {
+                console.warn('[FortaPOS] Peringatan pengiriman email verifikasi:', evErr);
+            }
+
+            // 1. LOGIKA REGISTRASI BARU & KENDALI PERANGKAT TUNGGAL
             const devId = getOrCreateDeviceId();
             const now = new Date();
             const activatedAt = now.toISOString();
             const durationDays = 7;
             const expiresAt = new Date(now.getTime() + (durationDays * 24 * 60 * 60 * 1000)).toISOString();
 
+            // Status paket standar: "Masa Percobaan Gratis (7 Hari)"
             const trialLicense = {
                 code: 'TRIAL-BASIC-7D',
+                licenseCode: 'TRIAL-BASIC-7D',
                 packageType: 'basic',
-                packageName: 'Paket Basic (Masa Percobaan 7 Hari)',
+                packageName: 'Masa Percobaan Gratis (7 Hari)',
                 durationDays: 7,
-                status: 'active',
+                status: 'trial',
                 isTrial: true,
                 activatedAt: activatedAt,
                 expiresAt: expiresAt,
+                expiryDate: expiresAt,
                 ownerName: ownerName,
                 storeId: uid
             };
@@ -7755,11 +8068,25 @@
                 email: email,
                 address: 'Alamat Toko Baru',
                 phone: '0812XXXXXXXX',
+                currentDeviceId: devId,
                 currentActiveDevice: devId,
                 activeDeviceId: devId,
                 activeDeviceLastSeen: activatedAt,
+                accountStatus: 'active',
+                paket_aktif: 'basic',
+                status_paket: 'trial',
+                licenseCode: 'TRIAL-BASIC-7D',
+                expiryDate: expiresAt,
+                license: trialLicense,
+                trialData: {
+                    isTrial: true,
+                    packageName: 'Masa Percobaan Gratis (7 Hari)',
+                    startedAt: activatedAt,
+                    durationDays: 7,
+                    expiresAt: expiresAt
+                },
                 createdAt: activatedAt,
-                license: trialLicense
+                updatedAt: activatedAt
             };
 
             // Simpan ke Firestore menggunakan UID sebagai Document ID multi-tenant
@@ -7835,6 +8162,10 @@
             playBeep('success');
             triggerHapticFeedback(70);
             showToast(`Pendaftaran Owner berhasil! Toko "${storeName}" aktif (Store ID: ${uid.slice(0, 8)}...)`, 'success');
+            // 3. LOGIKA ISOLASI PAKET ANTAR AKUN
+            setUidScopedPackageData(uid, trialLicense);
+            // 5a. Tampilkan modal verifikasi email
+            openEmailVerificationModal(email);
             logActivity('Autentikasi Owner', `Owner ${ownerName} berhasil mendaftar via Firebase Auth (UID: ${uid}).`);
 
             // Arahkan otomatis ke halaman utama aplikasi
@@ -7842,6 +8173,8 @@
         }
 
         async function handleLoginOwner(e) {
+            // 3. LOGIKA ISOLASI PAKET ANTAR AKUN: Bersihkan RAM State sebelum login akun baru
+            clearInMemoryAndSessionState();
             if (e && typeof e.preventDefault === 'function') e.preventDefault();
             const emailInput = document.getElementById('ownerLoginEmail');
             const passInput = document.getElementById('ownerLoginPass');
@@ -8017,13 +8350,21 @@
             if (isDeviceFieldEmpty || isSameDevice || isPremium) {
                 if (isFirebaseConfigured && db && storeId) {
                     try {
-                        await db.collection('stores').doc(storeId).update({
+                        // 1. Simpan currentDeviceId ke Firestore
+                        await db.collection('stores').doc(storeId).set({
+                            currentDeviceId: myDeviceId,
                             currentActiveDevice: myDeviceId,
                             activeDeviceId: myDeviceId,
                             activeDeviceLastSeen: new Date().toISOString()
-                        });
+                        }, { merge: true });
+                        await db.collection('owners').doc(storeId).set({
+                            currentDeviceId: myDeviceId,
+                            currentActiveDevice: myDeviceId,
+                            activeDeviceId: myDeviceId,
+                            activeDeviceLastSeen: new Date().toISOString()
+                        }, { merge: true });
                     } catch (e) {
-                        console.warn('Gagal memperbarui active device di Firestore:', e);
+                        console.warn('Gagal memperbarui currentDeviceId di Firestore:', e);
                     }
                 }
                 localStorage.setItem('fortapos_active_device_id', myDeviceId);
@@ -8381,6 +8722,8 @@
         // SINGLE-DEVICE FORCE LOGOUT & SESSION TERMINATION
         // ==========================================
         function forceLogoutCollisionSession(otherDeviceId) {
+            // Bersihkan RAM State dan sesi lokal secara bersih
+            clearInMemoryAndSessionState();
             unsubscribers.forEach(unsub => { try { unsub(); } catch (e) {} });
             unsubscribers = [];
             localStorage.removeItem('toko_hj_nurjanah_session');
@@ -8855,10 +9198,17 @@
 
                             // Monitor Single-Device Access secara real-time
                             if (currentUser && currentUser.role === 'owner' && !currentUser.isDemo) {
-                                const isPremium = currentLicense && currentLicense.packageType === 'premium';
-                                const activeId = (data.currentActiveDevice || data.activeDeviceId || "").trim();
-                                const myDevId = getOrCreateDeviceId();
-                                if (!isPremium && activeId && activeId !== myDevId) {
+                                // 1. LOGIKA KENDALI PERANGKAT TUNGGAL (SINGLE-DEVICE TAKEOVER MODE)
+                            const remoteDeviceId = (data.currentDeviceId || data.currentActiveDevice || data.activeDeviceId || "").trim();
+                            const myDevId = getOrCreateDeviceId();
+                            if (remoteDeviceId && remoteDeviceId !== myDevId) {
+                                console.warn(`[Single-Device Takeover Mode] Login baru terdeteksi di perangkat lain (${remoteDeviceId}). Sesi pada perangkat ini diputuskan otomatis.`);
+                                forceLogoutCollisionSession(remoteDeviceId);
+                                return;
+                            } else {
+                                hideDeviceLockoutModal();
+                            }
+                            if (false) {
                                     console.warn(`[Single-Device Access] Sesi diputus karena takeover oleh perangkat lain (${activeId})`);
                                     forceLogoutCollisionSession(activeId);
                                     return;
@@ -17255,5 +17605,72 @@
         window.copyOwnerStoreId = copyOwnerStoreId;
 
     </script>
+
+    <!-- ============================================================== -->
+    <!-- MODAL LUPA PASSWORD (RESET PASSWORD VIA FIREBASE AUTH)        -->
+    <!-- ============================================================== -->
+    <div id="forgotPasswordModal" class="fixed inset-0 bg-slate-900/80 z-[260] flex items-center justify-center hidden p-4 backdrop-blur-sm">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center border border-slate-200 dark:border-slate-800">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl shadow-xs">
+                <i class="fa-solid fa-key"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-800 dark:text-white">Lupa Password Akun Owner</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                    Masukkan alamat email Owner terdaftar. Kami akan mengirimkan tautan resmi pemulihan/reset password langsung ke email Anda via Firebase Auth.
+                </p>
+            </div>
+            <form onsubmit="handleSendPasswordReset(event)" class="space-y-3 text-left">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Email Terdaftar</label>
+                    <input type="email" id="resetPasswordEmail" required placeholder="Cth: owner@tokoberkah.com" class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-xs bg-slate-50 dark:bg-[#121212] text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div class="space-y-2 pt-1">
+                    <button type="submit" id="btnSubmitPasswordReset" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow transition text-xs flex items-center justify-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                        <span>Kirim Tautan Reset Password</span>
+                    </button>
+                    <button type="button" onclick="closeForgotPasswordModal()" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold py-2 rounded-xl transition text-xs cursor-pointer">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- MODAL PEMBERITAHUAN VERIFIKASI EMAIL (FIREBASE AUTH)           -->
+    <!-- ============================================================== -->
+    <div id="emailVerificationModal" class="fixed inset-0 bg-slate-900/85 z-[270] flex items-center justify-center hidden p-4 backdrop-blur-sm">
+        <div class="bg-white dark:bg-[#1e1e1e] rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-4 text-center border border-slate-200 dark:border-slate-800">
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center text-3xl shadow-sm">
+                <i class="fa-solid fa-envelope-circle-check"></i>
+            </div>
+            <div>
+                <h3 class="text-base sm:text-lg font-bold text-slate-800 dark:text-white">Verifikasi Email Akun Anda</h3>
+                <p class="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+                    Tautan verifikasi resmi telah dikirim ke alamat email:
+                    <br><strong id="verificationEmailTarget" class="text-emerald-600 dark:text-emerald-400 font-mono text-sm block mt-1">email@anda.com</strong>
+                </p>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                    Silakan buka email Anda dan klik tautan konfirmasi. Jika belum masuk, periksa juga folder <strong>Spam / Promosi</strong>.
+                </p>
+            </div>
+            <div class="space-y-2 pt-2">
+                <button type="button" onclick="checkEmailVerificationStatus()" id="btnCheckEmailVerification" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow transition text-xs flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-circle-check text-xs"></i>
+                    <span>Saya Sudah Verifikasi / Lanjut Masuk</span>
+                </button>
+                <button type="button" onclick="resendVerificationEmail()" id="btnResendEmailVerification" class="w-full bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 text-blue-700 dark:text-blue-300 font-bold py-2.5 rounded-xl border border-blue-200 dark:border-blue-900 transition text-xs flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-rotate-right text-xs"></i>
+                    <span>Kirim Ulang Email Verifikasi</span>
+                </button>
+                <button type="button" onclick="closeEmailVerificationModal()" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold py-2 rounded-xl transition text-xs cursor-pointer">
+                    Tutup Sementara
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
